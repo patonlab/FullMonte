@@ -1705,6 +1705,11 @@ class getoutData:
 		def getENERGY(self, outlines, format):
 			if format == "Mopac":
 				for i in range(0,len(outlines)):
+					if outlines[i].find("FINAL HEAT OF FORMATION") > -1: #Get the energy (convert from eV to Hartree)
+						print outlines[i].split()
+						energy=(float(outlines[i].split()[5]))
+                                                energy=energy*4.184/2625.5
+						self.ENERGY = energy
 					if outlines[i].find("TOTAL_ENERGY") > -1:
 						#print float(outlines[i].split("=")[1].replace("D","E"))
 						self.ENERGY = 0.036749309*float(outlines[i].split("=")[1].replace("D","E"))
