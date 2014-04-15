@@ -1233,7 +1233,7 @@ class Writeintro:
 		log.Write("   | o  "+("STEP: "+str(Params.STEP)).ljust(leftcol)+("|").rjust(rightcol))
 		#log.Write("|  "+("POOL: pool size for simultaneous optimizations: "+str(Params.POOL)).ljust(leftcol)+("|").rjust(rightcol)+"\n"+emptyline)
 		if Params.HSWAP>0:
-			log.Write("   | "+("HSWAP: "+str(Params.HSWAP)+" meaning NH,OH and SH protons are allowed to wander...").ljust(leftcol)+("|").rjust(rightcol)+"\n"+emptyline)
+			log.Write("   | o  "+("HSWAP: "+str(Params.HSWAP)+" meaning NH,OH and SH protons are allowed to wander...").ljust(leftcol)+("|").rjust(rightcol))
 		log.Write(dashedline+"\n")
 
 
@@ -1705,14 +1705,14 @@ class getoutData:
 		def getENERGY(self, outlines, format):
 			if format == "Mopac":
 				for i in range(0,len(outlines)):
-					if outlines[i].find("FINAL HEAT OF FORMATION") > -1: #Get the energy (convert from eV to Hartree)
-						print outlines[i].split()
-						energy=(float(outlines[i].split()[5]))
+					if outlines[i].find("HEAT_OF_FORMATION") > -1: #Get the energy (convert from kcal/mol to Hartree)
+						#print outlines[i].split("=")
+						energy=(float(outlines[i].split("=")[1].replace("D","E")))
                                                 energy=energy*4.184/2625.5
 						self.ENERGY = energy
-					if outlines[i].find("TOTAL_ENERGY") > -1:
+					#if outlines[i].find("TOTAL_ENERGY") > -1:
 						#print float(outlines[i].split("=")[1].replace("D","E"))
-						self.ENERGY = 0.036749309*float(outlines[i].split("=")[1].replace("D","E"))
+					#	self.ENERGY = 0.036749309*float(outlines[i].split("=")[1].replace("D","E"))
 			if format == "Gaussian":
 				uff = 0
 				am1 = 0

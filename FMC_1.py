@@ -100,7 +100,7 @@ if __name__ == "__main__":
 # Model Chemistry to be used ##################################
 	for level in ["AM1", "PM3", "PM6", "PM7", "PM6-DH2"]:
 		if SEARCHPARAMS.LEVL.upper() == level: JOB = JobSpec("Mopac")
-	for level in ["UFF"]:
+	for level in ["UFF", "AMBER"]:
 		if SEARCHPARAMS.LEVL.upper() == level: JOB = JobSpec("Gaussian")
 	if JOB.PROGRAM != "Mopac" and JOB.PROGRAM != "Gaussian": log.Fatal("\no  "+SEARCHPARAMS.LEVL+" Level of Theory Not Yet Supported ... ")
 	JOB.JOBTYPE = SEARCHPARAMS.LEVL
