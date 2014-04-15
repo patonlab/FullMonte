@@ -1,0 +1,19 @@
+example using FullMonte with AMBER force field and atomic charges from B3LYP/6-31G*
+
+INPUT:
+% FullMonte13 methylethylether.com methylethylether.params
+
+options selected:
+o  Use CPCM solvation ? (Y/N) n
+
+o  MCMM (Y) or SUMM (N) ? (Y/N) y
+
+
+OUTPUT:
+logfile methylethylether_fm.log summarizes results
+
+outfile methylethylether_fm.out can be opened with GaussView (select "view intermediate structures", they are ordered in terms of energy)
+
+pdbfile methylethylether_fm.pdb can be opened with PyMol (again they are ordered in terms of energy)
+
+

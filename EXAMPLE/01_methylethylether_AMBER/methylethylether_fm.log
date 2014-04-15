@@ -1,0 +1,53 @@
+
+o  Extracting molecule from methylethylether.com ...
+
+o  Extracting conformational search parameters from methylethylether.params ...
+
+o  Using AMBER level of theory ... 
+   ------------------------------------------------------------------------------------------------------------------
+   |    FULL_MONTE MCMM search on methylethylether                                                                  |
+   | o  COMP: 10.0 degrees                                                                                          |
+   | o  LEVL: AMBER model chemistry                                                                                 |
+   | o  DEMX: 41.84 kJ/mol                                                                                          |
+   | o  EWIN: 20.0 kJ/mol                                                                                           |
+   | o  MCSS: Uniform Usage Directed within 20.0 kJ/mol                                                             |
+   | o  MCNV: 1                                                                                                     |
+   |    {C5-O8}                                                                                                     |
+   | o  PROC: 1 processors will be used                                                                             |
+   | o  RJCT: 0.5x sum of Bondi radii                                                                               |
+   | o  STEP: 3                                                                                                     |
+   ------------------------------------------------------------------------------------------------------------------
+
+o  STEP 1: Generating 1 structures ...
+   methylethylether_step_1 is a duplicate of conformer methylethylether_step_0 ... 
+o  STEP 2: Generating 1 structures ...
+   methylethylether_step_2 is saved                                                E = -0.005416076672
+o  STEP 3: Generating 1 structures ...
+   methylethylether_step_3 is a duplicate of conformer methylethylether_step_0 ... 
+
+o  FULL MONTE SEARCH COMPLETE: 2 unique conformations. Global minimum energy = -0.00776                         
+
+     Conformer Name             Absolute Energy       Erel (kJ/mol)        Times found    Times used         CPU
+   ------------------------------------------------------------------------------------------------------------------
+   | methylethylether_step_0       -0.00776                  0.00              3              2         0d 0h 0m 0s |
+   | methylethylether_step_2       -0.00542                  6.17              1              1         0d 0h 0m 0s |
+   ------------------------------------------------------------------------------------------------------------------
+   | o  CPU time: 0d 0h 0m 0s   Execute time: 0d 0h 0m 2s                                                           |
+   | o  SE = 33.3    DMIN = 1    NOPT = 2    NFAIL = 0                                                              |
+   ------------------------------------------------------------------------------------------------------------------
+
+o  Reoptimizing conformers with strict convergence criteria ...
+
+o  FULL MONTE SEARCH COMPLETE: 2 unique conformations. Global minimum energy = -0.00776                         
+
+     Conformer Name             Absolute Energy       Erel (kJ/mol)        Times found    Times used         CPU
+   ------------------------------------------------------------------------------------------------------------------
+   | methylethylether_step_0       -0.00776                  0.00              3              2         0d 0h 0m 0s |
+   | methylethylether_step_2       -0.00542                  6.15              1              1         0d 0h 0m 0s |
+   ------------------------------------------------------------------------------------------------------------------
+   | o  CPU time: 0d 0h 0m 0s   Execute time: 0d 0h 0m 3s                                                           |
+   | o  SE = 33.3    DMIN = 1    NOPT = 2    NFAIL = 0                                                              |
+   ------------------------------------------------------------------------------------------------------------------
+
+   -----------------       N   O   R   M   A   L      T   E   R   M   I   N   A   T   I   O   N      ----------------
+
