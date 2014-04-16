@@ -1,4 +1,4 @@
-o  FULLMONTE Search Performed on methylethylether at 2014/04/15 21:48:05
+o  FULLMONTE Search Performed on methylethylether at 2014/04/16 11:15:14
 o  Search Parameters Used ...
 COMP = 10.0
 DEMX = 41.84
@@ -7,7 +7,7 @@ LEVL = 20.0
 MCSS = Uniform Usage Directed
 PROC = 1
 RJCT = 0.5
-STEP = 3
+STEP = 10
 
  GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad	
  GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad	
@@ -16,48 +16,48 @@ STEP = 3
  Center     Atomic     Atomic              Coordinates (Angstroms)
  Number     Number      Type              X           Y           Z
  ---------------------------------------------------------------------
-    1          6             0       -1.807097    0.020258    0.000300
-    2          1             0       -1.986703    0.619918    0.893828
-    3          1             0       -1.987091    0.622081   -0.891694
-    4          1             0       -2.505216   -0.818250   -0.000551
-    5          6             0        0.490706    0.536946   -0.000245
-    6          1             0        0.396680    1.158461   -0.894800
-    7          1             0        0.396102    1.158583    0.894159
-    8          8             0       -0.482822   -0.483660   -0.000523
-    9          6             0        1.833119   -0.185079    0.000279
-   10          1             0        1.898913   -0.819052   -0.884427
-   11          1             0        2.651409    0.533996    0.000716
-   12          1             0        1.898120   -0.819205    0.884939
+    1          6             0        1.807228    0.025278   -0.000007
+    2          1             0        1.981302    0.634243   -0.889203
+    3          1             0        1.981777    0.632625    0.890314
+    4          1             0        2.526357   -0.795739   -0.000887
+    5          6             0       -0.487228    0.527404   -0.000007
+    6          1             0       -0.389822    1.153501    0.891819
+    7          1             0       -0.389937    1.153468   -0.891956
+    8          8             0        0.486613   -0.495933   -0.000007
+    9          6             0       -1.838950   -0.178433   -0.000007
+   10          1             0       -1.922588   -0.806594    0.887114
+   11          1             0       -2.643587    0.557077   -0.000007
+   12          1             0       -1.922703   -0.806616   -0.886998
   ---------------------------------------------------------------------
 
  GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad	
  GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad	
 
-CONFORMER 1: methylethylether_step_0  -0.007764924969   3
+CONFORMER 1: methylethylether_step_0  -0.01372484991   5
                          Standard orientation:                         
  ---------------------------------------------------------------------
  Center     Atomic     Atomic              Coordinates (Angstroms)
  Number     Number      Type              X           Y           Z
  ---------------------------------------------------------------------
-    1          6             0       -1.807097    0.020258    0.000300
-    2          1             0       -1.986703    0.619918    0.893828
-    3          1             0       -1.987091    0.622081   -0.891694
-    4          1             0       -2.505216   -0.818250   -0.000551
-    5          6             0        0.490706    0.536946   -0.000245
-    6          1             0        0.396680    1.158461   -0.894800
-    7          1             0        0.396102    1.158583    0.894159
-    8          8             0       -0.482822   -0.483660   -0.000523
-    9          6             0        1.833119   -0.185079    0.000279
-   10          1             0        1.898913   -0.819052   -0.884427
-   11          1             0        2.651409    0.533996    0.000716
-   12          1             0        1.898120   -0.819205    0.884939
+    1          6             0        1.807228    0.025278   -0.000007
+    2          1             0        1.981302    0.634243   -0.889203
+    3          1             0        1.981777    0.632625    0.890314
+    4          1             0        2.526357   -0.795739   -0.000887
+    5          6             0       -0.487228    0.527404   -0.000007
+    6          1             0       -0.389822    1.153501    0.891819
+    7          1             0       -0.389937    1.153468   -0.891956
+    8          8             0        0.486613   -0.495933   -0.000007
+    9          6             0       -1.838950   -0.178433   -0.000007
+   10          1             0       -1.922588   -0.806594    0.887114
+   11          1             0       -2.643587    0.557077   -0.000007
+   12          1             0       -1.922703   -0.806616   -0.886998
   ---------------------------------------------------------------------
 
  GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad	
  Step number   1 out of a maximum of   2
  GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad	
 
-CONFORMER 2: methylethylether_step_2  -0.005421722976   1
+CONFORMER 2: methylethylether_step_1  -0.01122330414   6
  GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad	
  Step number   2 out of a maximum of   2
  GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad	
@@ -67,18 +67,18 @@ CONFORMER 2: methylethylether_step_2  -0.005421722976   1
  Center     Atomic     Atomic              Coordinates (Angstroms)
  Number     Number      Type              X           Y           Z
  ---------------------------------------------------------------------
-    1          6             0       -1.529248    0.417269    0.131637
-    2          1             0       -1.755153    0.151080    1.164888
-    3          1             0       -1.127606    1.429376    0.090184
-    4          1             0       -2.456415    0.394536   -0.442687
-    5          6             0        0.608624   -0.642129    0.261597
-    6          1             0        0.444039   -0.718150    1.339644
-    7          1             0        1.091913   -1.563827   -0.073303
-    8          8             0       -0.616702   -0.512037   -0.433971
-    9          6             0        1.511829    0.544646   -0.078222
-   10          1             0        1.104796    1.464658    0.336940
-   11          1             0        2.508993    0.379411    0.328986
-   12          1             0        1.575819    0.640505   -1.162956
+    1          6             0       -1.530169    0.416986    0.130774
+    2          1             0       -1.756763    0.149568    1.164378
+    3          1             0       -1.125598    1.429118    0.103225
+    4          1             0       -2.462345    0.410793   -0.436390
+    5          6             0        0.603831   -0.637460    0.266669
+    6          1             0        0.431974   -0.690972    1.345760
+    7          1             0        1.091674   -1.566682   -0.040203
+    8          8             0       -0.618567   -0.514068   -0.440881
+    9          6             0        1.517184    0.539423   -0.081861
+   10          1             0        1.103971    1.471072    0.301751
+   11          1             0        2.501681    0.383870    0.359900
+   12          1             0        1.618864    0.612088   -1.164867
   ---------------------------------------------------------------------
  This file enables the use of Gaussview to look at the saved conformers from a FullMonte Search (Select Read Intermediate Geometries when opening...)
  The conformers are ordered by energy, with the most stable first

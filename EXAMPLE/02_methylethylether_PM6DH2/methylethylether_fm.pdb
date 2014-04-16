@@ -1,0 +1,29 @@
+COMPND    methylethylether_step_2   E = 0.0
+AUTHOR    FULL MONTE SEARCH - www.patonlab.com
+HETATM    1  C   LIG     1      -1.658  -0.432   1.189
+HETATM    2  H   LIG     1      -1.428  -1.484   1.383
+HETATM    3  H   LIG     1      -1.381   0.192   2.044
+HETATM    4  H   LIG     1      -2.720  -0.307   0.944
+HETATM    5  C   LIG     1       0.451  -0.014   0.053
+HETATM    6  H   LIG     1       0.714   0.601  -0.830
+HETATM    7  H   LIG     1       0.798   0.489   0.972
+HETATM    8  O   LIG     1      -0.993   0.024  -0.003
+HETATM    9  C   LIG     1       0.980  -1.434  -0.059
+HETATM   10  H   LIG     1       0.590  -1.936  -0.954
+HETATM   11  H   LIG     1       2.075  -1.447  -0.122
+HETATM   12  H   LIG     1       0.694  -2.049   0.803
+END    COMPND    methylethylether_step_0   E = 4.7814752
+AUTHOR    FULL MONTE SEARCH - www.patonlab.com
+HETATM    1  C   LIG     1      -1.561   1.369   0.001
+HETATM    2  H   LIG     1      -1.273   1.917   0.904
+HETATM    3  H   LIG     1      -1.274   1.921  -0.899
+HETATM    4  H   LIG     1      -2.639   1.164   0.001
+HETATM    5  C   LIG     1       0.479   0.067  -0.001
+HETATM    6  H   LIG     1       0.828   0.595  -0.906
+HETATM    7  H   LIG     1       0.828   0.601   0.900
+HETATM    8  O   LIG     1      -0.977   0.054  -0.002
+HETATM    9  C   LIG     1       0.862  -1.401   0.004
+HETATM   10  H   LIG     1       0.462  -1.923  -0.876
+HETATM   11  H   LIG     1       1.951  -1.528   0.005
+HETATM   12  H   LIG     1       0.462  -1.917   0.887
+END    

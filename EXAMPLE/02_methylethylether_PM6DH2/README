@@ -1,0 +1,20 @@
+example using FullMonte with PM6 Hamiltonian with dispersion and H-bonding correction
+N.B. increased RMS value in torsion angles to 30 degrees above which conformers are deemed to be non-identical
+
+INPUT:
+% FullMonte13 methylethylether.com methylethylether.params
+
+options selected:
+o  Use COSMO solvation ? (Y/N) y
+
+   Enter solvent dielectric constant (default = 78.4) 4
+
+
+OUTPUT:
+logfile methylethylether_fm.log summarizes results
+
+outfile methylethylether_fm.out can be opened with GaussView (select "view intermediate structures", they are ordered in terms of energy)
+
+pdbfile methylethylether_fm.pdb can be opened with PyMol (again they are ordered in terms of energy)
+
+
