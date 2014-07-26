@@ -100,7 +100,7 @@ if __name__ == "__main__":
 # Model Chemistry to be used ##################################
 	for level in ["AM1", "PM3", "PM6", "PM7", "PM6-DH2"]:
 		if SEARCHPARAMS.LEVL.upper() == level: JOB = JobSpec("Mopac")
-	for level in ["UFF", "AMBER"]:
+	for level in ["UFF", "AMBER", "PDDG"]:
 		if SEARCHPARAMS.LEVL.upper() == level: JOB = JobSpec("Gaussian")
 	if JOB.PROGRAM != "Mopac" and JOB.PROGRAM != "Gaussian": log.Fatal("\no  "+SEARCHPARAMS.LEVL+" Level of Theory Not Yet Supported ... ")
 	JOB.JOBTYPE = SEARCHPARAMS.LEVL
@@ -191,8 +191,7 @@ for suffix in [".com", ".csh", ".mop", ".arc", ".aux", ".joblog", ".errlog", ".c
 FMVAR = Assign_Variables(MOLSPEC, SEARCHPARAMS, log)
 if SEARCHPARAMS.CSEARCH == "MCMM" and SEARCHPARAMS.STEP == 0:
 	SEARCHPARAMS.STEP = int(math.pow(3,FMVAR.MCNV))
-	SEARCHPARAMS.STEP = SEARCHPARAMS.STEP + int(math.pow(3,len(FMVAR.RING)-1))
-	#SEARCHPARAMS.STEP = SEARCHPARAMS.STEP + 20
+if SEARCHPARAMS.FLEX == "ON": SEARCHPARAMS.STEP = SEARCHPARAMS.STEP + int(math.pow(3,len(FMVAR.RING)-1))
 if SEARCHPARAMS.CSEARCH == "SUMM":
 	if interactivemode == 1:
 		SEARCHPARAMS.ITVL = raw_input("\no  Required Interval (degrees) for systematic rotations ? ")
@@ -243,6 +242,7 @@ while CSEARCH.STEP*SEARCHPARAMS.POOL <= SEARCHPARAMS.STEP:
 		NBcontacts = 1
 
 		if SEARCHPARAMS.CSEARCH == "SUMM":
+			attempts = 0
 			torsiontwist = [0]* len(FMVAR.TORSION)
 			for j in range(0,len(FMVAR.TORSION)-1):
 				#print i, math.pow(ninterval, (len(torsiontwist)-j-1))
@@ -251,13 +251,23 @@ while CSEARCH.STEP*SEARCHPARAMS.POOL <= SEARCHPARAMS.STEP:
 				while torsiontwist[j] >= 360.0: torsiontwist[j] = torsiontwist[j] - 360.0
 			torsiontwist[len(FMVAR.TORSION)-1] = int(i)%int(math.pow(ninterval, (len(torsiontwist)-j-1))) * interval
 			print "   Dihedral twists in degrees:", torsiontwist
-
+                        CONFSPEC.CONNECTIVITY = MOLSPEC.CONNECTIVITY
+                        CONFSPEC.ATOMTYPES = MOLSPEC.ATOMTYPES
+                        CONFSPEC.CHARGE = MOLSPEC.CHARGE
+                        CONFSPEC.MULT = MOLSPEC.MULT
+                        CONFSPEC.MMTYPES = MOLSPEC.MMTYPES
+                        CONFSPEC.CARTESIANS = []
+			for i in range (0,len(CSEARCH.CARTESIANS[0])):
+					CONFSPEC.CARTESIANS.append([])
+                                        for cart in (CSEARCH.CARTESIANS[0][i]):
+                                                CONFSPEC.CARTESIANS[i].append(cart)
+      			print CONFSPEC.CARTESIANS 
 			if FMVAR.MCNV != 0: FMVAR.ADJUST = []
 			for j in range(0,len(FMVAR.TORSION)): FMVAR.ADJUST.append([int(FMVAR.TORSION[j][0])+1, int(FMVAR.TORSION[j][1])+1, int(torsiontwist[j])])
 			if hasattr(FMVAR, "ADJUST"):
 				#print FMVAR.ADJUST
 				for torsion in FMVAR.ADJUST:
-					if torsion[2] != 0: CONFSPEC.CARTESIANS = AtomRot(MOLSPEC, torsion, MOLSPEC.CARTESIANS)
+					if torsion[2] != 0: CONFSPEC.CARTESIANS = AtomRot(MOLSPEC, torsion, CONFSPEC.CARTESIANS)
 			NBcontacts = checkDists(CONFSPEC, SEARCHPARAMS)
 			CSEARCH.CLASH.append(NBcontacts)
 		
@@ -309,7 +319,7 @@ while CSEARCH.STEP*SEARCHPARAMS.POOL <= SEARCHPARAMS.STEP:
 					CONFSPEC.CARTESIANS = translateMol(FMVAR, CONFSPEC)
 					CONFSPEC.CARTESIANS = rotateMol(FMVAR, CONFSPEC)
 				
-				if FMVAR.MCRI > 0:
+				if FMVAR.MCRI > 0 and SEARCHPARAMS.FLEX == "ON":
 					print "   Detected a ring substructure: atoms", FMVAR.RING, "are connected"
 					rcom = find_centroid(FMVAR.RING,CONFSPEC)[3:]
 					
@@ -375,7 +385,6 @@ while CSEARCH.STEP*SEARCHPARAMS.POOL <= SEARCHPARAMS.STEP:
 							for ringatom in FMVAR.RING:
 								if (int(inf[2*n])-1)==ringatom:
 									ringneighbour.append(int(inf[2*n])-1)
-						#print "SUM2", sum(CSEARCH.CARTESIANS[startgeom])
 						print "   Neighbours in the ring", ringneighbour
 						oldvecA = [CONFSPEC.CARTESIANS[atomid][0] - CONFSPEC.CARTESIANS[ringneighbour[0]][0], CONFSPEC.CARTESIANS[atomid][1] - CONFSPEC.CARTESIANS[ringneighbour[0]][1], CONFSPEC.CARTESIANS[atomid][2] - CONFSPEC.CARTESIANS[ringneighbour[0]][2]]
 						oldvecB = [CONFSPEC.CARTESIANS[atomid][0] - CONFSPEC.CARTESIANS[ringneighbour[1]][0], CONFSPEC.CARTESIANS[atomid][1] - CONFSPEC.CARTESIANS[ringneighbour[1]][1], CONFSPEC.CARTESIANS[atomid][2] - CONFSPEC.CARTESIANS[ringneighbour[1]][2]]
@@ -383,7 +392,6 @@ while CSEARCH.STEP*SEARCHPARAMS.POOL <= SEARCHPARAMS.STEP:
 						oldmag = (oldnorm[0]**2 + oldnorm[1]**2 + oldnorm[2]**2) ** 0.5
 						oldnorm = [oldnorm[0]/oldmag, oldnorm[1]/oldmag, oldnorm[2]/oldmag]
 						
-						#print "SUM3", sum(CSEARCH.CARTESIANS[startgeom])
 						mag = 1.0; magnitude = random.uniform(-1*mag,mag)
 						print CONFSPEC.CARTESIANS[atomid]
 						CONFSPEC.CARTESIANS[atomid][0] = CONFSPEC.CARTESIANS[atomid][0] + x * magnitude
@@ -398,8 +406,6 @@ while CSEARCH.STEP*SEARCHPARAMS.POOL <= SEARCHPARAMS.STEP:
 						newmag = (newnorm[0]**2 + newnorm[1]**2 + newnorm[2]**2) ** 0.5
 						newnorm = [newnorm[0]/newmag, newnorm[1]/newmag, newnorm[2]/newmag]
 
-						#print "SUM4", sum(CSEARCH.CARTESIANS[startgeom])
-						#print oldnorm, newnorm
 						rotang = 180.0/math.pi*math.acos(oldnorm[0]*newnorm[0]+oldnorm[1]*newnorm[1]+oldnorm[2]*newnorm[2])
 						print "     A ROTATION THROUGH", rotang
 						#newvec = [CONFSPEC.CARTESIANS[atomid][0] - rcom[0], CONFSPEC.CARTESIANS[atomid][1] - rcom[1], CONFSPEC.CARTESIANS[atomid][2] - rcom[2]]
@@ -452,7 +458,7 @@ while CSEARCH.STEP*SEARCHPARAMS.POOL <= SEARCHPARAMS.STEP:
 		#print CONFSPEC.CARTESIANS
 		if NBcontacts == 0 and attempts < 100: print "   SUCCESSFULLY ALTERED GEOM..."
 		if attempts > 99 and NBcontacts != 0: print "   EXCEEDED MAXIMUM ATTEMPTS TO ALTER GEOM..."
-		writeInput(JOB, CONFSPEC); submitJob(JOB, CONFSPEC, log)
+		if NBcontacts == 0: writeInput(JOB, CONFSPEC); submitJob(JOB, CONFSPEC, log)
 
 # Filter after optimization
 	for i in range(((CSEARCH.STEP-1)*SEARCHPARAMS.POOL+1),((CSEARCH.STEP)*SEARCHPARAMS.POOL)+1):
@@ -490,7 +496,7 @@ while CSEARCH.STEP*SEARCHPARAMS.POOL <= SEARCHPARAMS.STEP:
 					for j in range(0, CSEARCH.NSAVED): 
 						#if (CONFSPEC.ENERGY-CSEARCH.GLOBMIN)*2625.5 < -0.1: break
 						if abs((CONFSPEC.ENERGY-CSEARCH.ENERGY[j])*2625.5) < ECOMP:
-							print "   COMPARING   "+CONFSPEC.NAME+"   "+str(CONFSPEC.ENERGY)+" cf "+CSEARCH.NAME[j]+"   "+str(CSEARCH.ENERGY[j])+": ediff = "+str((CONFSPEC.ENERGY-CSEARCH.ENERGY[j])*2625.5)
+							#print "   COMPARING   "+CONFSPEC.NAME+"   "+str(CONFSPEC.ENERGY)+" cf "+CSEARCH.NAME[j]+"   "+str(CSEARCH.ENERGY[j])+": ediff = "+str((CONFSPEC.ENERGY-CSEARCH.ENERGY[j])*2625.5)
 							if checkSame(CONFSPEC, CSEARCH, SEARCHPARAMS, j) > 0 or checkSame(makemirror(CONFSPEC), CSEARCH, SEARCHPARAMS, j) > 0:
 								log.Write("   "+(CONFSPEC.NAME+" is a duplicate of conformer "+CSEARCH.NAME[j]+" ... ").ljust(50))
 								CSEARCH.TIMESFOUND[j] = CSEARCH.TIMESFOUND[j] + 1

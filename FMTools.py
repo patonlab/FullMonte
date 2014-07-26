@@ -277,10 +277,10 @@ def checkSame(ConfSpec, CSearch, SearchParams, savedconf):
 		torval1=getTorsion(ConfSpec)
 		#print ConfSpec.NAME
 		#print ConfSpec.CARTESIANS
-		print torval1
+		#print torval1
 		#print CSearch.NAME[savedconf]
 		#print CSearch.CARTESIANS[savedconf]
-		print CSearch.TORVAL[savedconf]
+		#print CSearch.TORVAL[savedconf]
 		for x in range(0,len(torval1)):
 			difftor=math.sqrt((torval1[x]-CSearch.TORVAL[savedconf][x])*(torval1[x]-CSearch.TORVAL[savedconf][x]))
 			if difftor>180.0:
@@ -383,9 +383,9 @@ def checkSame(ConfSpec, CSearch, SearchParams, savedconf):
 		#this is a horrible hack which returns the cartesians back to before equivalent coordinate systems were considered....
 		ConfSpec.CARTESIANS = tempcart
 		
-	print "   ----------"
-	print "   "+str(besttordiff)
-	print "   ----------"
+	#print "   ----------"
+	#print "   "+str(besttordiff)
+	#print "   ----------"
 	#print ConfSpec.NAME, CSearch.NAME[savedconf], besttordiff
 	if besttordiff<SearchParams.COMP: sameval=sameval+1
 	return sameval
@@ -1016,7 +1016,7 @@ class RemoveConformer:
 class CleanAfterJob:	
 	def __init__(self, Job, Confspec, samecheck, toohigh, isomerize):					
 		try:
-			for suffix in [".com", ".mop", ".aux", ".arc", ".temp", ".end", ".chk", ".joblog", ".csh", ".errlog"]: 
+			for suffix in [".co", ".mop", ".aux", ".arc", ".temp", ".end", ".chk", ".joblog", ".csh", ".errlog"]: 
 				if os.path.exists(Confspec.NAME+suffix): os.remove(Confspec.NAME+suffix)
 
 			# If discarded remove the outfile as well		
@@ -1549,6 +1549,7 @@ class getParams:
 		self.CSEARCH = "MCMM"
 		self.MCSS="Uniform Usage Directed"
 		self.ITVL=60
+		self.FLEX="OFF"
 		self.EWIN=20.0
 		self.COMP=10.0
 		self.DEMX=41.84
@@ -1572,6 +1573,7 @@ class getParams:
 			
 			
 			for line in instructlines:
+				if line.find("FLEX") > -1: self.FLEX = "ON"
 				if line.find("SUMM") > -1: self.CSEARCH = "SUMM"
 				if line.find("MMIN") > -1: self.MMIN = int(line.split("=")[1].rstrip('\n').lstrip())
 				if line.find("ITVL") > -1: self.ITVL = int(line.split("=")[1].rstrip('\n').lstrip())
@@ -2004,7 +2006,7 @@ def MultMin(CSEARCH, SEARCHPARAMS,CONFSPEC, MOLSPEC, JOB, start, log):
 				#print "checking ", CSEARCH.NAME[i], "against", CSEARCH.NAME[j]
 				#if (CONFSPEC.ENERGY-CSEARCH.ENERGY[j])*2625.5 < -0.5: break
 				if abs((CONFSPEC.ENERGY-CSEARCH.ENERGY[j])*2625.5) < ECOMP:
-					print "   COMPARING   "+CONFSPEC.NAME+"   "+str(CONFSPEC.ENERGY)+" cf "+CSEARCH.NAME[j]+"   "+str(CSEARCH.ENERGY[j])+": ediff = "+str((CONFSPEC.ENERGY-CSEARCH.ENERGY[j])*2625.5)
+					#print "   COMPARING   "+CONFSPEC.NAME+"   "+str(CONFSPEC.ENERGY)+" cf "+CSEARCH.NAME[j]+"   "+str(CSEARCH.ENERGY[j])+": ediff = "+str((CONFSPEC.ENERGY-CSEARCH.ENERGY[j])*2625.5)
 					#what if they are suspiciously similar in energy?
 					if checkSame(CONFSPEC, CSEARCH, SEARCHPARAMS, j) > 0 or checkSame(makemirror(CONFSPEC), CSEARCH, SEARCHPARAMS, j) > 0:
 						log.Write("   "+(CONFSPEC.NAME+" is a duplicate of conformer "+CSEARCH.NAME[j]).ljust(50))
