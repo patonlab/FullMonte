@@ -41,7 +41,7 @@ if __name__ == "__main__":
 	
 	# Initialize the logfile for all text output
 	print "\no  Creating Full Monte QM log file for",filein+"_qm ..."
-	log = FMLog(filein, "log", "qm")
+	log = FMLog(filein, "dat", "qm")
 	qmtgz = filein+"_qm.tgz"
 	qmsuffix = "dft"	
 	if len(sys.argv)==5: qmsuffix = sys.argv[4]
@@ -221,7 +221,7 @@ if __name__ == "__main__":
 						log.Write("   "+(CONFSPEC.NAME+" is rejected: "+str(MOLSPEC.CONSTRAINED[0][0])+" has broken/formed with "+str(MOLSPEC.CONSTRAINED[1][0])).ljust(50))
 					
 				# Check for high energy
-				if ((CONFSPEC.ENERGY - CSEARCH.GLOBMIN)*2625.5) < SEARCHPARAMS.DEMX: toohigh = 0
+				if ((CONFSPEC.ENERGY - CSEARCH.GLOBMIN)*2625.5) < SEARCHPARAMS.DEMX * 2: toohigh = 0
 				else: toohigh = 1; log.Write("   "+(CONFSPEC.NAME+" is rejected due to high energy ... ").ljust(50))
 				
 				
@@ -229,7 +229,7 @@ if __name__ == "__main__":
 				negfreq = 1
 				if len(CONFSPEC.FREQS)>1: 	
 					if CONFSPEC.FREQS[0] > 0.0: negfreq = 0; log.Write("\n   "+(CONFSPEC.NAME+" is rejected due to no imaginary freqs ... ").ljust(50))
-					if CONFSPEC.FREQS[1] < -10.0: negfreq = 2; log.Write("\n   "+(CONFSPEC.NAME+" is rejected due to more than one imaginary freqs ... ").ljust(50))
+					if CONFSPEC.FREQS[1] < -30.0: negfreq = 2; log.Write("\n   "+(CONFSPEC.NAME+" is rejected due to more than one imaginary freqs ... ").ljust(50))
 				else: conffreq=[0.00]
 				#log.Write("o  "+(CONFSPEC.NAME+": unable to read freqs ... ").ljust(50))
 				

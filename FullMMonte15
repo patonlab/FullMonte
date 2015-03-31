@@ -1,0 +1,4 @@
+#!/bin/csh
+
+python $FULL_MONTE_DIR/FMMC.py $*
+

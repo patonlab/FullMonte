@@ -1,14 +1,14 @@
 #!/usr/bin/python
 
-###                   ###                     ###          ###      ###
-###                   ###                     ###          ###      ###
-    #####b.   ####b.  ###### .d##b.  #####b.  ###  ####b.  #####b.  ###
-### ### "##b     "##b ###   d##""##b ### "##b ###     "##b ### "##b ###
-### ###  ### .d###### ###   ###  ### ###  ### ### .d###### ###  ###
-### ### d##P ###  ### Y##b. Y##..##P ###  ### ### ###  ### ### d##P ###
-### #####P"  "Y######  "Y### "Y##P"  ###  ### ### "Y###### #####P"  ###
-    ###
-    ###
+###                     ###          ###
+###                     ###          ###
+#####b.   ####b.  ###### .d##b.  #####b.  ###  ####b.  #####b.
+### "##b     "##b ###   d##""##b ### "##b ###     "##b ### "##b
+###  ### .d###### ###   ###  ### ###  ### ### .d###### ###  ###
+### d##P ###  ### Y##b. Y##..##P ###  ### ### ###  ### ### d##P
+#####P"  "Y######  "Y### "Y##P"  ###  ### ### "Y###### #####P"
+###
+###
 
 # THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -18,27 +18,35 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# Comments and/or additions are welcome (send e-mail to:
-# robert.paton@chem.ox.ac.uk
 
-
-###############################################################
-#                        FMTools.py                           #
-#       Libraries and methods for Full Monte Carlo            #
-###############################################################
-#######  Written by:  Rob Paton ###############################
-#######  Last modified:  Mar 20, 2013 #########################
-###############################################################
-
-# Python Libraries ############################################
-import subprocess, sys, os, commands, math, time, tarfile, random
-from numpy import matrix
-###############################################################
+""" @package
 	
-# EXECECTUBALE ################################################
+	@author Robert Paton
+	@date 03/2010
+"""
+
+# Standard Python Libraries #
+import glob
+import subprocess
+import sys
+import os
+import random
+import math
+import tarfile
+import commands
+import time
+
+
+# Non-Standard Python Libraries #
+#from numpy import *
+from rdkit import Chem
+from rdkit.Chem import AllChem
+
+
+# EXECECTUBALE #
 G09_EXEC = 'g09'
 MOPAC_EXEC = '/opt/mopac/MOPAC2012.exe'
-###############################################################
+
 
 ECOMP = 5.0
 
@@ -1873,7 +1881,6 @@ class writeInput:
 				
 				#For all constrained coordinates define Internal coordinates
 				else:
-					#print "constraining", i, j
 					if freezedist == 1:
 						stop = 0
 						for connectj in MolSpec.CONNECTIVITY[j]:
@@ -1883,7 +1890,6 @@ class writeInput:
 								for connectk in MolSpec.CONNECTIVITY[k]:
 									l = int(connectk.split("__")[0])-1
 									if l < i and l != j and stop == 0:
-										
 										fileout.write(" "+str(round(calcdist(j,i,MolSpec.CARTESIANS),3))+" 0 "+str(round(calcangle(i,j,k,MolSpec.CARTESIANS),3))+" 1 "+str(round(calcdihedral(i,j,k,l,MolSpec.CARTESIANS),3))+" 1  "+str(j+1)+" "+str(k+1)+" "+str(l+1))
 										stop = 1
 						
