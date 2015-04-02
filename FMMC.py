@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+# things to do
 # non-random? output is always the same?
 # stereochemistry check
 # replace checksame by RMS comparison in RDKit - the getTorsion is not required
@@ -445,11 +446,8 @@ class RemoveConformer:
 		print todel, len(todel),
 		cutoff = (len(CSEARCH.NAME)-len(todel))
 		print cutoff
-		#print len(CSEARCH.NAME)-len(todel)
 		newtodel=[]
 		for i in range(len(todel)-1, -1, -1): newtodel.append(todel[i])
-		#print newtodel
-		#print len(CSEARCH.NAME), CSEARCH.NAME
 		print CSEARCH.NAME[cutoff:]
 		print CSEARCH.NAME[:cutoff]
 		
@@ -458,9 +456,7 @@ class RemoveConformer:
 			CSEARCH.NREJECT = CSEARCH.NREJECT + CSEARCH.TIMESFOUND[todel[i]]
 		
 		del CSEARCH.NAME[cutoff:]
-		#print len(CSEARCH.NAME), CSEARCH.NAME
 		del CSEARCH.ENERGY[cutoff:]
-		#print len(CSEARCH.ENERGY), CSEARCH.ENERGY
 		del CSEARCH.CARTESIANS[cutoff:]
 		del CSEARCH.CONNECTIVITY[cutoff:]
 		del CSEARCH.USED[cutoff:]
@@ -593,8 +589,32 @@ class makePDBformat:
 					y = "%.3f" % CSearch.CARTESIANS[i][j][1]
 					z = "%.3f" % CSearch.CARTESIANS[i][j][2]
 					pdbfile.write("\nHETATM"+str(j+1).rjust(5)+MolSpec.ATOMTYPES[j].rjust(3)+"   LIG     1".rjust(10)+x.rjust(12)+y.rjust(8)+z.rjust(8))
-				pdbfile.write("\nEND    ")
+				pdbfile.write("\nEND    \n")
 			pdbfile.close()
+
+
+class makeSDFformat:
+	#Write a PDF file for viewing that contains the low energy conformations in ascending order of energy
+	def __init__(self, filein, MolSpec, CSearch,append):
+		sdffile = open(filein+"_"+append+".sdf", 'w' )
+		if CSearch.NSAVED > 0:
+			for i in range(0, CSearch.NSAVED):
+				Erel = (CSearch.ENERGY[i]-CSearch.GLOBMIN)
+				sdffile.write(CSearch.NAME[i]+"\n")
+				sdffile.write("     E="+str(Erel)+"\n\n")
+				sdffile.write(str(MolSpec.NATOMS).rjust(3)+str(MolSpec.NBONDS).rjust(3)+"  0  0  0  0  0  0  0  0  0999 V2000")
+				for j in range(0, MolSpec.NATOMS):
+					x = "%.4f" % CSearch.CARTESIANS[i][j][0]
+					y = "%.4f" % CSearch.CARTESIANS[i][j][1]
+					z = "%.4f" % CSearch.CARTESIANS[i][j][2]
+					sdffile.write("\n"+x.rjust(10)+y.rjust(10)+z.rjust(10)+MolSpec.ATOMTYPES[j].rjust(2)+"   0  0  0  0  0  0  0  0  0  0  0  0")
+				for atomi in range(0,MolSpec.GetNumAtoms()):
+						for atomj in range(atomi,MolSpec.GetNumAtoms()):
+							if MolSpec.GetBondBetweenAtoms(atomi,atomj):
+								sdffile.write("\n"+str(atomi+1).rjust(3)+str(atomj+1).rjust(3)+str(int(MolSpec.GetBondBetweenAtoms(atomi,atomj).GetBondTypeAsDouble())).rjust(2)+" 0")
+				sdffile.write("\nM  END\n$$$$    \n")
+			sdffile.close()
+
 
 # Formatting
 dashedline = "   ------------------------------------------------------------------------------------------------------------------"
@@ -650,6 +670,9 @@ if __name__ == "__main__":
 		filein = sys.argv[1].split(".")[0]
 		if len(sys.argv[1].split(".mol"))>1: filetype = sys.argv[1].split(".")[1]
 		else: print "MOL file name required"; sys.exit()
+		for i in range(1,len(sys.argv)):
+			if sys.argv[i] == "-step": PARAMS.MAXSTEP = int(sys.argv[i+1])
+			elif sys.argv[i] == "-levl": PARAMS.LEVL = (sys.argv[i+1])
 	else: print "\nWrong number of arguments used. Correct format: FullMonte molecule.mol \n"; sys.exit()
 
 
@@ -660,18 +683,15 @@ if __name__ == "__main__":
 		else: print "\nExiting\n";  sys.exit(1)
 	log = FMLog(filein,"dat", "fm")
 
-
 	# Open the structure file #
 	log.Write("\no  Extracting structure from "+filein+"."+filetype+" ...")
 	if filetype == "mol": MOLSPEC = Chem.MolFromMolFile('./'+filein+'.mol', removeHs=False)
 	MOLSPEC.NAME = filein
 
-
 	# Model Chemistry to be used
 	for level in ["UFF", "MMFF"]:
 		if PARAMS.LEVL.upper() == level: JOBTYPE = level
 	log.Write("\no  Using "+JOBTYPE+" force field ... ")
-
 
 	# Perform an optimization of the starting geometry #
 	if JOBTYPE == "MMFF" or JOBTYPE == "UFF":
@@ -692,6 +712,7 @@ if __name__ == "__main__":
 	MOLSPEC.CARTESIANS = []
 	MOLSPEC.CHARGE = Chem.GetFormalCharge(MOLSPEC)
 	MOLSPEC.NATOMS = MOLSPEC.GetNumAtoms()
+	MOLSPEC.NBONDS = MOLSPEC.GetNumBonds()
 	for atom in MOLSPEC.GetAtoms(): MOLSPEC.ATOMTYPES.append(atom.GetSymbol())
 	for atom in range(0,MOLSPEC.NATOMS):
 		pos = MOLSPEC.GetConformer().GetAtomPosition(atom)
@@ -850,7 +871,7 @@ if __name__ == "__main__":
 	#Summary of completed Full Monte search #######################
 	CSEARCH.COMPLETE = 1
 	WriteSummary(CSEARCH, PARAMS, start, log)
-	makePDBformat(filein, MOLSPEC, CSEARCH, "fm")
+	makeSDFformat(filein, MOLSPEC, CSEARCH, "fm")
 	end = time.strftime("%H:%M:%S", time.localtime())
 	asciiArt(end); log.Write(normaltermination); log.Finalize()	
 
