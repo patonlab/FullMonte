@@ -664,17 +664,12 @@ CSEARCH.TIMESFOUND = [1]
 CSEARCH.NSAVED = 1
 CSEARCH.COMPLETE = 0
 
-if __name__ == "__main__":
-    # An input file must be specified - format must be MOL #
-    if len(sys.argv)>1: 
-        filein = sys.argv[1].split(".")[0]
-        if len(sys.argv[1].split(".mol"))>1: filetype = sys.argv[1].split(".")[1]
-        else: print "MOL file name required"; sys.exit()
-        for i in range(1,len(sys.argv)):
-            if sys.argv[i] == "-step": PARAMS.MAXSTEP = int(sys.argv[i+1])
-            elif sys.argv[i] == "-levl": PARAMS.LEVL = (sys.argv[i+1])
-    else: print "\nWrong number of arguments used. Correct format: FullMonte molecule.mol \n"; sys.exit()
+def main(filein, filetype, maxstep, levl):
 
+    if maxstep:
+        PARAMS.MAXSTEP = maxstep
+    if levl:
+        PARAMS.LEVL = levl
 
     # Initialize the logfile for all text output #
     if os.path.exists(filein+"_fm.dat"):
@@ -875,3 +870,24 @@ if __name__ == "__main__":
     end = time.strftime("%H:%M:%S", time.localtime())
     asciiArt(end); log.Write(normaltermination); log.Finalize() 
 
+if __name__ == "__main__":
+    # An input file must be specified - format must be MOL #
+    if len(sys.argv)>1: 
+        filein = sys.argv[1].split(".")[0]
+        if len(sys.argv[1].split(".mol"))>1: filetype = sys.argv[1].split(".")[1]
+        else: print "MOL file name required"; sys.exit()
+        
+        # Get options if any are supplied on command line
+        maxstep, levl = None, None
+        for i in range(1,len(sys.argv)):
+            if sys.argv[i] == "-step":
+                maxstep = int(sys.argv[i+1])
+            elif sys.argv[i] == "-levl":
+                levl = sys.argv[i+1]
+
+        # Now call main function passing in params from the command line.
+        main(filein, filetype, maxstep, levl)
+
+    else:
+        print "\nWrong number of arguments used. Correct format: FullMonte molecule.mol \n"
+        sys.exit()
