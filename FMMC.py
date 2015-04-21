@@ -664,7 +664,7 @@ CSEARCH.TIMESFOUND = [1]
 CSEARCH.NSAVED = 1
 CSEARCH.COMPLETE = 0
 
-def main(filein, filetype, maxstep, levl):
+def main(filein, filetype, maxstep = None, levl = None):
 
     if maxstep:
         PARAMS.MAXSTEP = maxstep
