@@ -680,7 +680,7 @@ def main(filein, filetype, maxstep, levl):
 
     # Open the structure file #
     log.Write("\no  Extracting structure from "+filein+"."+filetype+" ...")
-    if filetype == "mol": MOLSPEC = Chem.MolFromMolFile('./'+filein+'.mol', removeHs=False)
+    if filetype == "mol": MOLSPEC = Chem.MolFromMolFile(filein+'.mol', removeHs=False)
     MOLSPEC.NAME = filein
 
     # Model Chemistry to be used
