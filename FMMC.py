@@ -664,7 +664,7 @@ CSEARCH.TIMESFOUND = [1]
 CSEARCH.NSAVED = 1
 CSEARCH.COMPLETE = 0
 
-def main(filein, filetype, maxstep = None, levl = None):
+def main(filein, filetype, maxstep = None, levl = None, progress_callback = None):
 
     if maxstep:
         PARAMS.MAXSTEP = maxstep
@@ -862,6 +862,9 @@ def main(filein, filetype, maxstep = None, levl = None):
                     
         #End of step - update step number
         CSEARCH.STEP = CSEARCH.STEP + 1
+
+        if progress_callback:
+            progress_callback(steps_completed=CSEARCH.STEP, steps_total=PARAMS.MAXSTEP)
 
     #Summary of completed Full Monte search #######################
     CSEARCH.COMPLETE = 1
