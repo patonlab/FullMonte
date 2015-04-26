@@ -592,11 +592,54 @@ class makePDBformat:
                 pdbfile.write("\nEND    \n")
             pdbfile.close()
 
+class SDFWriter:
+    """
+    A class that acts like a file. If num_individual_files is positive, it also
+    creates an individual file for each conformation, incrementing a counter and opening
+    a new file until num_individual_files is reached.  Call .next_conformation() to 
+    move to a new file.
+    """
+    def __init__(self, main_file_path, num_individual_files=0):
+        self.num_individual_files = num_individual_files
+        self.make_individual_files = num_individual_files > 0
+        self.individual_file = None
+        self.main_file_name = main_file_path
+        self.main_file = open(main_file_path, 'w')
+        self.counter = 0
+        self.next_conformation()
+
+    def _get_individual_file(self):
+        if self.individual_file:
+            self.individual_file.close()
+        return open(self.main_file_name.replace('.sdf', '_%d.sdf' % self.counter), 'w')
+
+
+    def write(self, data):
+        self.main_file.write(data)
+        if self.make_individual_files:
+            self.individual_file.write(data)
+
+    def next_conformation(self):
+        self.counter += 1
+
+        if self.counter > self.num_individual_files:
+            self.make_individual_files = False
+
+        if self.make_individual_files:
+            self.individual_file = self._get_individual_file()
+
+    def close(self):
+        self.main_file.close()
+        if self.individual_file:
+            self.individual_file.close()
+
 
 class makeSDFformat:
-    #Write a PDF file for viewing that contains the low energy conformations in ascending order of energy
-    def __init__(self, filein, MolSpec, CSearch,append):
-        sdffile = open(filein+"_"+append+".sdf", 'w' )
+    #Write a SDF file for viewing that contains the low energy conformations in ascending order of energy.
+    # Provide an integer to make_individual_files to additionally make that number of individual files, one per conformation.
+    def __init__(self, filein, MolSpec, CSearch,append, num_individual_files=0):
+        sdffile_name = filein+"_"+append+".sdf"
+        sdffile = SDFWriter(sdffile_name, num_individual_files)
         if CSearch.NSAVED > 0:
             for i in range(0, CSearch.NSAVED):
                 Erel = (CSearch.ENERGY[i]-CSearch.GLOBMIN)
@@ -613,6 +656,7 @@ class makeSDFformat:
                             if MolSpec.GetBondBetweenAtoms(atomi,atomj):
                                 sdffile.write("\n"+str(atomi+1).rjust(3)+str(atomj+1).rjust(3)+str(int(MolSpec.GetBondBetweenAtoms(atomi,atomj).GetBondTypeAsDouble())).rjust(2)+" 0")
                 sdffile.write("\nM  END\n$$$$    \n")
+                sdffile.next_conformation()
             sdffile.close()
 
 
@@ -664,7 +708,7 @@ CSEARCH.TIMESFOUND = [1]
 CSEARCH.NSAVED = 1
 CSEARCH.COMPLETE = 0
 
-def main(filein, filetype, maxstep = None, levl = None, progress_callback = None):
+def main(filein, filetype, maxstep = None, levl = None, progress_callback = None, num_individual_files = 0):
 
     if maxstep:
         PARAMS.MAXSTEP = maxstep
@@ -869,7 +913,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
     #Summary of completed Full Monte search #######################
     CSEARCH.COMPLETE = 1
     WriteSummary(CSEARCH, PARAMS, start, log)
-    makeSDFformat(filein, MOLSPEC, CSEARCH, "fm")
+    makeSDFformat(filein, MOLSPEC, CSEARCH, "fm", num_individual_files)
     end = time.strftime("%H:%M:%S", time.localtime())
     asciiArt(end); log.Write(normaltermination); log.Finalize() 
 
