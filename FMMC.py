@@ -10,11 +10,14 @@
 # Standard Python Libraries #
 import sys, os, random, math, datetime, time
 import numpy as np
+import logging
 
 # Non-Standard Python Libraries #
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import ForceField
+
+logger = logging.getLogger('FMMC')
 
 # The time elapsed between two specified Y/M/D 24H/M/S format #
 def RealTime(time1, time2):
@@ -330,7 +333,9 @@ class Assign_Variables:
         if self.MCNVmax < self.MCNVmin: self.MCNVmax = self.MCNVmin
         
         #If there is nothing to vary then exit
-        if self.MCNV == 0 and self.MCRI == 0 and self.NMOLS == 1: print ("\nFATAL ERROR: Found zero rotatable torsions and only one molecule in %s  \n"%MolSpec.NAME); sys.exit()
+        if self.MCNV == 0 and self.MCRI == 0 and self.NMOLS == 1:
+            logger.error("\nFATAL ERROR: Found zero rotatable torsions and only one molecule in %s  \n", MolSpec.NAME)
+            sys.exit()
 
 
 #Rotates specified single bond through a specified angle, returning the modified coordinates
@@ -391,7 +396,7 @@ def AtomRot(MolSpec, torsion, geometry):
 
     if len(newcoord) !=0 : return newcoord
     else:
-        print "didn't do anything!!!"
+        logger.warning("didn't do anything!!!")
         for i in range(0,len(geometry)): newcoord.append([0.0,0.0,0.0])
         return newcoord
 
@@ -442,14 +447,16 @@ class AddConformer:
 class RemoveConformer:
     def __init__(self, CSEARCH, todel):
         j=0
-        for i in range(0,len(CSEARCH.NAME)): print CSEARCH.NAME[i], CSEARCH.ENERGY[i]
-        print todel, len(todel),
+        for i in range(0,len(CSEARCH.NAME)):
+            logger.debug(CSEARCH.NAME[i])
+            logger.debug(CSEARCH.ENERGY[i])
+        #print todel, len(todel),
         cutoff = (len(CSEARCH.NAME)-len(todel))
-        print cutoff
+        #print cutoff
         newtodel=[]
         for i in range(len(todel)-1, -1, -1): newtodel.append(todel[i])
-        print CSEARCH.NAME[cutoff:]
-        print CSEARCH.NAME[:cutoff]
+        #print CSEARCH.NAME[cutoff:]
+        #print CSEARCH.NAME[:cutoff]
         
         for i in range(0,len(todel)):
             #print i, todel[i], CSEARCH.TIMESFOUND[todel[i]]
@@ -462,8 +469,10 @@ class RemoveConformer:
         del CSEARCH.USED[cutoff:]
         del CSEARCH.TIMESFOUND[cutoff:]
         del CSEARCH.TORVAL[cutoff:]
-        print "AFTER REMOVAL"
-        for i in range(0,len(CSEARCH.NAME)): print CSEARCH.NAME[i], CSEARCH.ENERGY[i]
+        logger.debug("AFTER REMOVAL")
+        for i in range(0,len(CSEARCH.NAME)):
+            logger.debug(CSEARCH.NAME[i])
+            logger.debug(CSEARCH.ENERGY[i])
         CSEARCH.NSAVED = len(CSEARCH.NAME)
 
 
@@ -477,7 +486,7 @@ class FMLog:
     # Write a message to the log
     def Write(self, message):
         # Print the message
-        print message
+        logger.info(message)
         
         # Write to log
         self.log.write(message + "\n")
@@ -490,7 +499,7 @@ class FMLog:
     # Write a fatal error, finalize and terminate the program
     def Fatal(self, message):
         # Print the message
-        print message+"\n"
+        logger.error(message+"\n")
         
         # Write to log
         self.log.write(message + "\n")
@@ -674,6 +683,7 @@ leftcol=97
 rightcol=12
 
 def asciiArt(now):
+    return
     print "     ___       ___                                    ___          ___          ___                   ___ "
     print "    /  /\\     /__/\\                                  /__/\\        /  /\\        /__/\\         ___     /  /\\"
     print "   /  /:/_    \\  \\:\\                                |  |::\\      /  /::\\       \\  \\:\\       /  /\\   /  /:/_"
@@ -724,8 +734,11 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
     # Initialize the logfile for all text output #
     if os.path.exists(filein+"_fm.dat"):
         var = raw_input("\no  Log file already exists! OK to overwrite this file ? (Y/N) ")
-        if var.lower() == "y" or var.lower() == "": print "   Overwriting ..."
-        else: print "\nExiting\n";  sys.exit(1)
+        if var.lower() == "y" or var.lower() == "":
+            logger.warning("   Overwriting ...")
+        else: 
+            logger.error("\nExiting\n")
+            sys.exit(1)
     log = FMLog(filein,"dat", "fm")
 
     # Open the structure file #
@@ -761,7 +774,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
     for atom in MOLSPEC.GetAtoms(): MOLSPEC.ATOMTYPES.append(atom.GetSymbol())
     for atom in range(0,MOLSPEC.NATOMS):
         pos = MOLSPEC.GetConformer().GetAtomPosition(atom)
-        print pos.x, pos.y, pos.z
+        logger.debug("%s, %s, %s", pos.x, pos.y, pos.z)
         MOLSPEC.CARTESIANS.append([pos.x, pos.y, pos.z])
 
     for atomi in range(0,MOLSPEC.GetNumAtoms()):
@@ -830,14 +843,14 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
         
             # Take input geometry and apply specified torsional changes
             if hasattr(FMVAR, "ADJUST"):
-                print FMVAR.ADJUST
+                logger.debug(FMVAR.ADJUST)
                 for torsion in FMVAR.ADJUST: CONFSPEC.CARTESIANS = AtomRot(MOLSPEC, torsion, CONFSPEC.CARTESIANS)
 
 
         conf = CONFSPEC.GetConformer(id=-1)
         for atomi in range(0,MOLSPEC.GetNumAtoms()):
             conf.SetAtomPosition(atomi,CONFSPEC.CARTESIANS[atomi])
-            print conf.GetAtomPosition(atomi).x, conf.GetAtomPosition(atomi).y, conf.GetAtomPosition(atomi).z
+            logger.debug("%s %s %s", conf.GetAtomPosition(atomi).x, conf.GetAtomPosition(atomi).y, conf.GetAtomPosition(atomi).z)
 
 
         #for nconf in range(0,CONFSPEC.GetNumConformers()):
@@ -847,7 +860,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
         # Perform an optimization
         if JOBTYPE == "MMFF" or JOBTYPE == "UFF":
             AllChem.EmbedMolecule(CONFSPEC)
-            print Chem.MolToMolBlock(CONFSPEC,confId=-1)
+            logger.debug(Chem.MolToMolBlock(CONFSPEC,confId=-1))
 
             if JOBTYPE == "UFF":
                 if AllChem.UFFHasAllMoleculeParams(CONFSPEC):
@@ -864,7 +877,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
         CONFSPEC.CARTESIANS = []
         for atom in range(0,MOLSPEC.NATOMS):
             pos = CONFSPEC.GetConformer().GetAtomPosition(atom)
-            print pos.x, pos.y, pos.z
+            #print pos.x, pos.y, pos.z
             CONFSPEC.CARTESIANS.append([pos.x, pos.y, pos.z])
 
         #Check whether the molecule has high energy
@@ -928,7 +941,9 @@ if __name__ == "__main__":
     if len(sys.argv)>1: 
         filein = sys.argv[1].split(".")[0]
         if len(sys.argv[1].split(".mol"))>1: filetype = sys.argv[1].split(".")[1]
-        else: print "MOL file name required"; sys.exit()
+        else:
+            logger.error("MOL file name required")
+            sys.exit()
         
         # Get options if any are supplied on command line
         maxstep, levl = None, None
@@ -942,5 +957,5 @@ if __name__ == "__main__":
         main(filein, filetype, maxstep, levl)
 
     else:
-        print "\nWrong number of arguments used. Correct format: FullMonte molecule.mol \n"
+        logger.error("\nWrong number of arguments used. Correct format: FullMonte molecule.mol \n")
         sys.exit()
