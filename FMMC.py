@@ -605,13 +605,19 @@ class SDFWriter:
         self.individual_file = None
         self.main_file_name = main_file_path
         self.main_file = open(main_file_path, 'w')
+        _, self.extension = os.path.splitext(self.main_file_name)
+        if len(self.extension) == 0:
+            raise Exception('SDFWriter assumes filenames have an extension at the end.')
         self.counter = 0
         self.next_conformation()
 
     def _get_individual_file(self):
         if self.individual_file:
             self.individual_file.close()
-        return open(self.main_file_name.replace('.sdf', '_%d.sdf' % self.counter), 'w')
+
+        # insert _<num> just before the extension
+        new_file_name = self.main_file_name.replace(self.extension, '_%d%s' % (self.counter, self.extension))
+        return open(new_file_name, 'w')
 
 
     def write(self, data):
