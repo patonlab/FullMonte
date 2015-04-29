@@ -4,7 +4,10 @@ import tempfile
 import os
 import shutil
 import FMMC
+import logging
 
+fmmc_logger = logging.getLogger('FMMC')
+fmmc_logger.addHandler(logging.NullHandler())
 
 class TestFMMCMain(unittest.TestCase):
     def setUp(self):
@@ -24,5 +27,7 @@ class TestFMMCMain(unittest.TestCase):
         # reproduce params as calculated in FMMC.py. NB imperfect. What if file contains >1 dot?
         filein   = self.inputfile_path.split(".")[0]
         filetype = self.inputfile_path.split(".")[1]
-        FMMC.asciiArt = lambda s: 1
         FMMC.main(filein, filetype, maxstep=1)
+
+        # hexane.dat, hexane.mol, hexane_fm.sdf
+        self.assertEqual(3, len(os.listdir(self.tempdir)))
