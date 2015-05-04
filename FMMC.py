@@ -751,7 +751,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
 
     if not PARAMS.MAXSTEP: PARAMS.MAXSTEP = int(math.pow(3,FMVAR.MCNV))
     start = time.strftime("%H:%M:%S", time.localtime())
-    asciiArt(start); Writeintro(MOLSPEC, PARAMS, FMVAR, start, log)
+    Writeintro(MOLSPEC, PARAMS, FMVAR, start, log)
 
     CONFSPEC = MOLSPEC
     CSEARCH.NAME.append(MOLSPEC.NAME)
@@ -846,16 +846,16 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
             samecheck = 0
             torval1=getTorsion(CONFSPEC)
             # also check whether a duplicate conformation has been found
-            if CONFSPEC.ENERGY > CSEARCH.GLOBMIN:
-                for j in range(0, CSEARCH.NSAVED):
-                    if CSEARCH.ENERGY[j] - CONFSPEC.ENERGY > 0.5: break
-                    if abs(CONFSPEC.ENERGY - CSEARCH.ENERGY[j]) < 0.5:
-                        if checkSame(torval1, CSEARCH, PARAMS, j) > 0:
-                            log.Write("   "+(CONFSPEC.NAME+" is a duplicate of conformer "+CSEARCH.NAME[j]+" ... ").ljust(50))
-                            CSEARCH.TIMESFOUND[j] = CSEARCH.TIMESFOUND[j] + 1
-                            CSEARCH.NREJECT = CSEARCH.NREJECT + 1
-                            samecheck = samecheck + 1
-                            break
+            
+            for j in range(0, CSEARCH.NSAVED):
+                if CSEARCH.ENERGY[j] - CONFSPEC.ENERGY > 0.5: break
+                if abs(CONFSPEC.ENERGY - CSEARCH.ENERGY[j]) < 0.5:
+                    if checkSame(torval1, CSEARCH, PARAMS, j) > 0:
+                        log.Write("   "+(CONFSPEC.NAME+" is a duplicate of conformer "+CSEARCH.NAME[j]+" ... ").ljust(50))
+                        CSEARCH.TIMESFOUND[j] = CSEARCH.TIMESFOUND[j] + 1
+                        CSEARCH.NREJECT = CSEARCH.NREJECT + 1
+                        samecheck = samecheck + 1
+                        break
             
             # Unique conformation with low energy! #
             if samecheck == 0:
