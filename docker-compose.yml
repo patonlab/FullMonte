@@ -1,0 +1,8 @@
+fullmontetests:
+  build: .
+  command: tests/run_and_run.sh
+  volumes: 
+    - .:/usr/src/app
+  working_dir: /usr/src/app
+  environment:
+    - PYTHONPATH=/usr/lib/python2.7/dist-packages
