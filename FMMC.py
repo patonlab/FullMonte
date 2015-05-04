@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-# things to do
 # non-random? output is always the same?
 # stereochemistry check
 # replace checksame by RMS comparison in RDKit - the getTorsion is not required
@@ -22,8 +21,8 @@ logger = logging.getLogger('FMMC')
 # The time elapsed between two specified Y/M/D 24H/M/S format #
 def RealTime(time1, time2):
     FMT = "%H:%M:%S"
-    #t_delta = datetime.strptime(str(time2), FMT) - datetime.strptime(str(time1), FMT)
-    #return [t_delta.days, t_delta.hours, t_delta.minutes,t_delta.seconds]
+	#t_delta = datetime.strptime(str(time2), FMT) - datetime.strptime(str(time1), FMT)
+	#return [t_delta.days, t_delta.hours, t_delta.minutes,t_delta.seconds]
     return [0,0,0,0]
 
 #Pythagoras and Simple Trig #
@@ -82,21 +81,12 @@ def getTorsion(MolSpec):
 
 # Filter post optimization - checks whether two conformers are identical on the basis of non-bonded distances and energy. Needs to consider equivalent coordinate descriptions
 # also do enantiomers here
-def checkSame(ConfSpec, CSearch, SearchParams, savedconf):
-    
-    if not hasattr(ConfSpec, "CARTESIANS"): return 1
-    
+def checkSame(torval1, CSearch, SearchParams, savedconf):
     tordiff=0.0; besttordiff=180.0; sameval=0
     
     if len(SearchParams.EQUI)==0:
         #print "No equivalent coordinate descriptions"
-        torval1=getTorsion(ConfSpec)
         #print ConfSpec.NAME
-        #print ConfSpec.CARTESIANS
-        #print torval1
-        #print CSearch.NAME[savedconf]
-        #print CSearch.CARTESIANS[savedconf]
-        #print CSearch.TORVAL[savedconf]
         for x in range(0,len(torval1)):
             difftor=math.sqrt((torval1[x]-CSearch.TORVAL[savedconf][x])*(torval1[x]-CSearch.TORVAL[savedconf][x]))
             if difftor>180.0:
@@ -198,7 +188,7 @@ def checkSame(ConfSpec, CSearch, SearchParams, savedconf):
 
         #this is a horrible hack which returns the cartesians back to before equivalent coordinate systems were considered....
         ConfSpec.CARTESIANS = tempcart
-
+	
     if besttordiff<SearchParams.COMP: sameval=sameval+1
     return sameval
 
@@ -585,22 +575,6 @@ class WriteSummary:
         if CSearch.COMPLETE == 1: log.Write("     o  "+("SE = "+str(round(float(CSearch.AERATE),1))+"    DMIN = "+str(CSearch.DMIN)+"    NOPT = "+str((CSearch.STEP-1))+"    NFAIL = "+str(CSearch.NFAILED)).ljust(leftcol)+("").rjust(rightcol)+"\n"+ dashedline)
 
 
-class makePDBformat:
-    #Write a PDF file for viewing that contains the low energy conformations in ascending order of energy
-    def __init__(self, filein, MolSpec, CSearch,append):
-        pdbfile = open(filein+"_"+append+".pdb", 'w' )
-        if CSearch.NSAVED > 0:
-            for i in range(0, CSearch.NSAVED):
-                Erel = (CSearch.ENERGY[i]-CSearch.GLOBMIN)
-                pdbfile.write("COMPND    "+CSearch.NAME[i]+"   E = "+str(Erel)+"\nAUTHOR    FULL MONTE SEARCH - paton.chem.ox.ac.uk")
-                for j in range(0, MolSpec.NATOMS):
-                    x = "%.3f" % CSearch.CARTESIANS[i][j][0]
-                    y = "%.3f" % CSearch.CARTESIANS[i][j][1]
-                    z = "%.3f" % CSearch.CARTESIANS[i][j][2]
-                    pdbfile.write("\nHETATM"+str(j+1).rjust(5)+MolSpec.ATOMTYPES[j].rjust(3)+"   LIG     1".rjust(10)+x.rjust(12)+y.rjust(8)+z.rjust(8))
-                pdbfile.write("\nEND    \n")
-            pdbfile.close()
-
 class SDFWriter:
     """
     A class that acts like a file. If num_individual_files is positive, it also
@@ -682,20 +656,7 @@ normaltermination = "\n   -----------------       N   O   R   M   A   L      T  
 leftcol=97
 rightcol=12
 
-def asciiArt(now):
-    return
-    print "     ___       ___                                    ___          ___          ___                   ___ "
-    print "    /  /\\     /__/\\                                  /__/\\        /  /\\        /__/\\         ___     /  /\\"
-    print "   /  /:/_    \\  \\:\\                                |  |::\\      /  /::\\       \\  \\:\\       /  /\\   /  /:/_"
-    print "  /  /:/ /\\    \\  \\:\\   ___     ___  ___     ___    |  |:|:\\    /  /:/\\:\\       \\  \\:\\     /  /:/  /  /:/ /\\"
-    print " /  /:/ /:/___  \\  \\:\\ /__/\\   /  /\\/__/\\   /  /\\ __|__|:|\\:\\  /  /:/  \\:\\  _____\\__\\:\\   /  /:/  /  /:/ /:/_"
-    print "/__/:/ /://__/\\  \\__\\:\\\\  \\:\\ /  /:/\\  \\:\\ /  /://__/::::| \\:\\/__/:/ \\__\\:\\/__/::::::::\\ /  /::\\ /__/:/ /:/ /\\"
-    print "\\  \\:\\/:/ \\  \\:\\ /  /:/ \\  \\:\\  /:/  \\  \\:\\  /:/ \\  \\:\\~~\\__\\/\\  \\:\\ /  /:/\\  \\:\\~~\\~~\\//__/:/\\:\\\\  \\:\\/:/ /:/"
-    print " \\  \\::/   \\  \\:\\  /:/   \\  \\:\\/:/    \\  \\:\\/:/   \\  \\:\\       \\  \\:\\  /:/  \\  \\:\\  ~~~ \\__\\/  \\:\\\\  \\::/ /:/"
-    print "  \\  \\:\\    \\  \\:\\/:/     \\  \\::/      \\  \\::/     \\  \\:\\       \\  \\:\\/:/    \\  \\:\\          \\  \\:\\\\  \\:\\/:/"
-    print "   \\  \\:\\    \\  \\::/       \\__\\/        \\__\\/       \\  \\:\\       \\  \\::/      \\  \\:\\          \\__\\/ \\  \\::/"
-    print "    \\__\\/     \\__\\/                                  \\__\\/        \\__\\/        \\__\\/                 \\__\\/ "
-    print "  ", now
+asciiArt = "     ___       ___                                    ___          ___          ___                   ___ \n    /  /\\     /__/\\                                  /__/\\        /  /\\        /__/\\         ___     /  /\\\n   /  /:/_    \\  \\:\\                                |  |::\\      /  /::\\       \\  \\:\\       /  /\\   /  /:/_\n  /  /:/ /\\    \\  \\:\\   ___     ___  ___     ___    |  |:|:\\    /  /:/\\:\\       \\  \\:\\     /  /:/  /  /:/ /\\\n /  /:/ /:/___  \\  \\:\\ /__/\\   /  /\\/__/\\   /  /\\ __|__|:|\\:\\  /  /:/  \\:\\  _____\\__\\:\\   /  /:/  /  /:/ /:/_\n/__/:/ /://__/\\  \\__\\:\\\\  \\:\\ /  /:/\\  \\:\\ /  /://__/::::| \\:\\/__/:/ \\__\\:\\/__/::::::::\\ /  /::\\ /__/:/ /:/ /\\\n\\  \\:\\/:/ \\  \\:\\ /  /:/ \\  \\:\\  /:/  \\  \\:\\  /:/ \\  \\:\\~~\\__\\/\\  \\:\\ /  /:/\\  \\:\\~~\\~~\\//__/:/\\:\\\\  \\:\\/:/ /:/\n \\  \\::/   \\  \\:\\  /:/   \\  \\:\\/:/    \\  \\:\\/:/   \\  \\:\\       \\  \\:\\  /:/  \\  \\:\\  ~~~ \\__\\/  \\:\\\\  \\::/ /:/\n  \\  \\:\\    \\  \\:\\/:/     \\  \\::/      \\  \\::/     \\  \\:\\       \\  \\:\\/:/    \\  \\:\\          \\  \\:\\\\  \\:\\/:/\n   \\  \\:\\    \\  \\::/       \\__\\/        \\__\\/       \\  \\:\\       \\  \\::/      \\  \\:\\          \\__\\/ \\  \\::/\n    \\__\\/     \\__\\/                                  \\__\\/        \\__\\/        \\__\\/                 \\__\\/\n  "
 
 
 class PARAMS: pass
@@ -883,14 +844,18 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
         #Check whether the molecule has high energy
         if ((CONFSPEC.ENERGY-CSEARCH.GLOBMIN)) < PARAMS.DEMX:
             samecheck = 0
+            torval1=getTorsion(CONFSPEC)
             # also check whether a duplicate conformation has been found
-            for j in range(0, CSEARCH.NSAVED):
-                if checkSame(CONFSPEC, CSEARCH, PARAMS, j) > 0 : #or checkSame(makemirror(CONFSPEC), CSEARCH, PARAMS, j) > 0:
-                    log.Write("   "+(CONFSPEC.NAME+" is a duplicate of conformer "+CSEARCH.NAME[j]+" ... ").ljust(50))
-                    CSEARCH.TIMESFOUND[j] = CSEARCH.TIMESFOUND[j] + 1
-                    CSEARCH.NREJECT = CSEARCH.NREJECT + 1
-                    samecheck = samecheck + 1
-                    break
+            if CONFSPEC.ENERGY > CSEARCH.GLOBMIN:
+                for j in range(0, CSEARCH.NSAVED):
+                    if CSEARCH.ENERGY[j] - CONFSPEC.ENERGY > 0.5: break
+                    if abs(CONFSPEC.ENERGY - CSEARCH.ENERGY[j]) < 0.5:
+                        if checkSame(torval1, CSEARCH, PARAMS, j) > 0:
+                            log.Write("   "+(CONFSPEC.NAME+" is a duplicate of conformer "+CSEARCH.NAME[j]+" ... ").ljust(50))
+                            CSEARCH.TIMESFOUND[j] = CSEARCH.TIMESFOUND[j] + 1
+                            CSEARCH.NREJECT = CSEARCH.NREJECT + 1
+                            samecheck = samecheck + 1
+                            break
             
             # Unique conformation with low energy! #
             if samecheck == 0:
@@ -934,7 +899,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
     WriteSummary(CSEARCH, PARAMS, start, log)
     makeSDFformat(filein, MOLSPEC, CSEARCH, "fm", num_individual_files)
     end = time.strftime("%H:%M:%S", time.localtime())
-    asciiArt(end); log.Write(normaltermination); log.Finalize() 
+    log.Write(asciiArt+end); log.Write(normaltermination); log.Finalize()
 
 if __name__ == "__main__":
     # An input file must be specified - format must be MOL #
