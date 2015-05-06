@@ -1,13 +1,8 @@
 #!/usr/bin/python
 
-# non-random? output is always the same?
-# stereochemistry check
-# replace checksame by RMS comparison in RDKit - the getTorsion is not required
-# get rid of writing classes and include in main loop
-# fix realtime
-
 # Standard Python Libraries #
-import sys, os, random, math, datetime, time
+import sys, os, random, math, time
+import datetime as dt
 import numpy as np
 import logging
 
@@ -17,13 +12,11 @@ from rdkit.Chem import AllChem
 from rdkit import ForceField
 
 logger = logging.getLogger('FMMC')
+#logging.basicConfig(level=logging.DEBUG)
 
 # The time elapsed between two specified Y/M/D 24H/M/S format #
 def RealTime(time1, time2):
-    FMT = "%H:%M:%S"
-	#t_delta = datetime.strptime(str(time2), FMT) - datetime.strptime(str(time1), FMT)
-	#return [t_delta.days, t_delta.hours, t_delta.minutes,t_delta.seconds]
-    return [0,0,0,0]
+    return (time2 - time1).seconds
 
 #Pythagoras and Simple Trig #
 def calcdist(atoma,atomb,coords):
@@ -75,30 +68,21 @@ def getTorsion(MolSpec):
                                     if (int(endDatom.split("__")[0])-1)!=atomb:endD = endD+MolSpec.ATOMTYPES[int(endDatom.split("__")[0])-1]
                                 if endA!="HHH" and endD!="HHH":
                                     torsion=calcdihedral(atoma,atomb,atomc,atomd,MolSpec.CARTESIANS)
-                                    #print (MolSpec.ATOMTYPES[atoma],atoma, MolSpec.ATOMTYPES[atomb],atomb, MolSpec.ATOMTYPES[atomc],atomc, MolSpec.ATOMTYPES[atomd],atomd, torsion)
                                     torval.append(torsion)
     return torval
 
-# Filter post optimization - checks whether two conformers are identical on the basis of non-bonded distances and energy. Needs to consider equivalent coordinate descriptions
-# also do enantiomers here
+# Filter post optimization - checks whether two conformers are identical on the basis of non-bonded distances and energy. Considers equivalent coordinate descriptions
 def checkSame(torval1, CSearch, SearchParams, savedconf):
     tordiff=0.0; besttordiff=180.0; sameval=0
     
     if len(SearchParams.EQUI)==0:
-        #print "No equivalent coordinate descriptions"
-        #print ConfSpec.NAME
         for x in range(0,len(torval1)):
             difftor=math.sqrt((torval1[x]-CSearch.TORVAL[savedconf][x])*(torval1[x]-CSearch.TORVAL[savedconf][x]))
             if difftor>180.0:
                 difftor=360.0-difftor
             tordiff=tordiff + difftor*difftor
-        
-        # print torval1[x], CSearch.TORVAL[savedconf][x], difftor
         if len(torval1)!=0:
             besttordiff=math.sqrt(tordiff/len(torval1))
-    #print "----------"
-    #print besttordiff
-    #print "----------"
 
     else:
         tempcart=[]
@@ -191,42 +175,6 @@ def checkSame(torval1, CSearch, SearchParams, savedconf):
 	
     if besttordiff<SearchParams.COMP: sameval=sameval+1
     return sameval
-
-
-# Find how many separate molecules there are
-def howmanyMol(bondmatrix,startatom):
-    molecule1=[]
-    count = 1
-    stop=0
-    currentatom=[]
-    nextlot=[]
-    currentatom.append([-1])
-    currentatom.append([startatom])
-    while count<100 and stop==0:
-        nextlot=[]
-        for onecurrentatom in currentatom[count]:
-            for partners in bondmatrix[onecurrentatom]:
-                    inf = partners.split("__")
-                    for n in range(0,len(inf)/2):
-                            noback=0
-                            for onepreviousatom in currentatom[count-1]:
-                                if (int(inf[2*n])-1)==onepreviousatom: # Can't go back - make sure atom isn't in previous currentatom
-                                    noback=noback+1
-                                if noback==0:
-                                    nextlot.append(int(inf[2*n])-1)
-        count=count+1
-        if len(nextlot)==0: stop=stop+1
-        currentatom.append(nextlot)
-
-    for i in range(0,len(bondmatrix)):
-        for j in range(0,len(currentatom)):
-            for atom in currentatom[j]:
-                if atom==i:
-                    same = 0
-                    for alreadyfound in molecule1:
-                        if atom == alreadyfound: same = same + 1
-                    if same ==0: molecule1.append(atom)
-    return molecule1
 
 # Looks for rotatable single bonds. Requires connectivity information. Uninteresting torsions (e.g. methyl groups) are excluded
 class Assign_Variables:
@@ -445,9 +393,7 @@ class RemoveConformer:
         #print cutoff
         newtodel=[]
         for i in range(len(todel)-1, -1, -1): newtodel.append(todel[i])
-        #print CSEARCH.NAME[cutoff:]
-        #print CSEARCH.NAME[:cutoff]
-        
+       
         for i in range(0,len(todel)):
             #print i, todel[i], CSEARCH.TIMESFOUND[todel[i]]
             CSEARCH.NREJECT = CSEARCH.NREJECT + CSEARCH.TIMESFOUND[todel[i]]
@@ -556,7 +502,7 @@ class Writeintro:
 class WriteSummary:
     # Formatted text printed to terminal and log file at the end of each search step
     def __init__(self, CSearch, SearchParams, start, log):
-        now = time.strftime("%H:%M:%S", time.localtime())
+        now = dt.datetime.now()
         runningtime = RealTime(start, now)
         
         if CSearch.COMPLETE == 0: log.Write("\no  "+("STEP "+str(CSearch.STEP)+" COMPLETE: "+str(CSearch.NSAVED)+" unique conformations. Global minimum energy = "+str(round(CSearch.GLOBMIN,5))).ljust(leftcol)+("").rjust(rightcol))
@@ -569,8 +515,8 @@ class WriteSummary:
             if len(absenergy.split(".")[1])!=5: absenergy = absenergy+"0"
             relenergy = str(round(float((CSearch.ENERGY[i]-CSearch.GLOBMIN)),2))
             if len(relenergy.split(".")[1])!=2: relenergy = relenergy+"0"
-            log.Write("     "+CSearch.NAME[i].ljust(30)+(absenergy).ljust(20)+(relenergy).rjust(10)+ (str(CSearch.TIMESFOUND[i])).rjust(15)+(str(CSearch.USED[i])).rjust(15)+("").rjust(2))
-        log.Write(dashedline+"\n     o  "+("Execute time: "+str(runningtime[0])+"d "+str(runningtime[1])+"h "+str(runningtime[2])+"m "+str(runningtime[3])+"s").ljust(leftcol)+("").rjust(rightcol))
+            log.Write("     "+os.path.split(CSearch.NAME[i])[1].ljust(30)+(absenergy).ljust(20)+(relenergy).rjust(10)+ (str(CSearch.TIMESFOUND[i])).rjust(15)+(str(CSearch.USED[i])).rjust(15)+("").rjust(2))
+        log.Write(dashedline+"\n     o  "+("Execute time: "+str(runningtime)+" seconds ").ljust(leftcol)+("").rjust(rightcol))
         if CSearch.COMPLETE == 0: log.Write("     o  "+("SE = "+str(round(float(CSearch.AERATE),1))+"    DMIN = "+str(CSearch.DMIN)+"    NOPT = "+str(CSearch.STEP)+"    NFAIL = "+str(CSearch.NFAILED)).ljust(leftcol)+("").rjust(rightcol)+"\n"+ dashedline)
         if CSearch.COMPLETE == 1: log.Write("     o  "+("SE = "+str(round(float(CSearch.AERATE),1))+"    DMIN = "+str(CSearch.DMIN)+"    NOPT = "+str((CSearch.STEP-1))+"    NFAIL = "+str(CSearch.NFAILED)).ljust(leftcol)+("").rjust(rightcol)+"\n"+ dashedline)
 
@@ -660,7 +606,7 @@ asciiArt = "     ___       ___                                    ___          _
 
 
 class PARAMS: pass
-PARAMS.MAXSTEP = 100
+PARAMS.MAXSTEP = 0
 PARAMS.LEVL = "UFF"
 PARAMS.COMP = 10
 PARAMS.FIXT = []
@@ -706,6 +652,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
     log.Write("\no  Extracting structure from "+filein+"."+filetype+" ...")
     if filetype == "mol": MOLSPEC = Chem.MolFromMolFile(filein+'.mol', removeHs=False)
     MOLSPEC.NAME = filein
+    logger.debug(Chem.MolToMolBlock(MOLSPEC,confId=-1))
 
     # Model Chemistry to be used
     for level in ["UFF", "MMFF"]:
@@ -725,7 +672,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
                 AllChem.MMFFOptimizeMolecule(MOLSPEC)
         MOLSPEC.ENERGY = ff.CalcEnergy()
     else: log.Fatal("\nFATAL ERROR"%file)
-
+    logger.debug(Chem.MolToMolBlock(MOLSPEC,confId=-1))
     MOLSPEC.ATOMTYPES = []
     MOLSPEC.CONNECTIVITY = []
     MOLSPEC.CARTESIANS = []
@@ -749,8 +696,8 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
     # If number of steps is not assigned use 3^rotatable torsions #
     FMVAR = Assign_Variables(MOLSPEC, PARAMS, log)
 
-    if not PARAMS.MAXSTEP: PARAMS.MAXSTEP = int(math.pow(3,FMVAR.MCNV))
-    start = time.strftime("%H:%M:%S", time.localtime())
+    if PARAMS.MAXSTEP == 0: PARAMS.MAXSTEP = int(math.pow(3,FMVAR.MCNV))
+    start = dt.datetime.now()
     Writeintro(MOLSPEC, PARAMS, FMVAR, start, log)
 
     CONFSPEC = MOLSPEC
@@ -766,7 +713,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
 
 
     # Stop once number of steps exceeded or no new conformers found 
-    while CSEARCH.STEP <= PARAMS.MAXSTEP:
+    while CSEARCH.STEP < PARAMS.MAXSTEP:
         
     # Setting the geometry that will be altered to generate new conformers
         for i in range(0, CSEARCH.NSAVED):
@@ -783,10 +730,13 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
 
         CONFSPEC.CARTESIANS = []
         # The coordinates of the lowest energy, least used structure will be altered
-        log.Write("o  STEP "+str(CSEARCH.STEP)+": Generating structure from "+CSEARCH.NAME[startgeom]+" ...")
+        log.Write("o  STEP "+str(CSEARCH.STEP)+": Generating structure from "+ os.path.split(CSEARCH.NAME[startgeom])[1]+" ...")
         for i in range (0,len(CSEARCH.CARTESIANS[startgeom])):
             CONFSPEC.CARTESIANS.append([])
             for cart in (CSEARCH.CARTESIANS[startgeom][i]): CONFSPEC.CARTESIANS[i].append(cart)
+        #logger.debug("Taking Cartesians")
+        #for cart in  CONFSPEC.CARTESIANS: logger.debug(cart)
+
         CONFSPEC.CONNECTIVITY = CSEARCH.CONNECTIVITY[startgeom]
         CONFSPEC.ATOMTYPES = MOLSPEC.ATOMTYPES
         if FMVAR.MCNVmin < FMVAR.MCNVmax: nrandom = random.randint(FMVAR.MCNVmin, FMVAR.MCNVmax)
@@ -795,7 +745,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
         if FMVAR.MCNV != 0:
             FMVAR.ADJUST = []
             for dihedral in random.sample(FMVAR.TORSION, nrandom): 
-                FMVAR.ADJUST.append([int(dihedral[0])+1, int(dihedral[1])+1, random.randint(0,360)])
+                FMVAR.ADJUST.append([int(dihedral[0])+1, int(dihedral[1])+1, random.randint(30,330)])
             
             if len(FMVAR.ETOZ) > 0:
                 ezisomerize = random.choice([0,1])
@@ -804,33 +754,36 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
         
             # Take input geometry and apply specified torsional changes
             if hasattr(FMVAR, "ADJUST"):
-                logger.debug(FMVAR.ADJUST)
+                #logger.debug(FMVAR.ADJUST)
                 for torsion in FMVAR.ADJUST: CONFSPEC.CARTESIANS = AtomRot(MOLSPEC, torsion, CONFSPEC.CARTESIANS)
 
-
-        conf = CONFSPEC.GetConformer(id=-1)
+        #logger.debug(Chem.MolToMolBlock(CONFSPEC,confId=-1))
+        #logger.debug("After Rotation")
+        conf = Chem.Conformer(MOLSPEC.GetNumAtoms())
         for atomi in range(0,MOLSPEC.GetNumAtoms()):
             conf.SetAtomPosition(atomi,CONFSPEC.CARTESIANS[atomi])
-            logger.debug("%s %s %s", conf.GetAtomPosition(atomi).x, conf.GetAtomPosition(atomi).y, conf.GetAtomPosition(atomi).z)
+            #logger.debug("%s %s %s", conf.GetAtomPosition(atomi).x, conf.GetAtomPosition(atomi).y, conf.GetAtomPosition(atomi).z)
 
+        cid = CONFSPEC.AddConformer(conf,assignId=True)
 
+        #logger.debug("NCONF ="+str(CONFSPEC.GetNumConformers()))
         #for nconf in range(0,CONFSPEC.GetNumConformers()):
         #   for atomi in range(0,CONFSPEC.GetNumAtoms()):
         #       print CONFSPEC.GetConformer(id=nconf-1).GetAtomPosition(atomi).x, CONFSPEC.GetConformer(id=nconf-1).GetAtomPosition(atomi).y, CONFSPEC.GetConformer(id=nconf-1).GetAtomPosition(atomi).z
 
         # Perform an optimization
         if JOBTYPE == "MMFF" or JOBTYPE == "UFF":
-            AllChem.EmbedMolecule(CONFSPEC)
-            logger.debug(Chem.MolToMolBlock(CONFSPEC,confId=-1))
+            #AllChem.EmbedMolecule(CONFSPEC)
+            #logger.debug(Chem.MolToMolBlock(CONFSPEC,confId=cid))
 
             if JOBTYPE == "UFF":
                 if AllChem.UFFHasAllMoleculeParams(CONFSPEC):
-                    ff = AllChem.UFFGetMoleculeForceField(CONFSPEC)
-                    AllChem.UFFOptimizeMolecule(CONFSPEC)
+                    ff = AllChem.UFFGetMoleculeForceField(CONFSPEC,confId=cid)
+                    AllChem.UFFOptimizeMolecule(CONFSPEC,confId=cid)
             if JOBTYPE == "MMFF":
                 if AllChem.MMFFHasAllMoleculeParams(CONFSPEC):
-                    ff = AllChem.MMFFGetMoleculeForceField(CONFSPEC,AllChem.MMFFGetMoleculeProperties(CONFSPEC))
-                    AllChem.MMFFOptimizeMolecule(CONFSPEC)
+                    ff = AllChem.MMFFGetMoleculeForceField(CONFSPEC,AllChem.MMFFGetMoleculeProperties(CONFSPEC),confId=cid)
+                    AllChem.MMFFOptimizeMolecule(CONFSPEC,confId=cid)
             CONFSPEC.ENERGY = ff.CalcEnergy()
         else: log.Fatal("\nFATAL ERROR"%file)
 
@@ -838,7 +791,6 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
         CONFSPEC.CARTESIANS = []
         for atom in range(0,MOLSPEC.NATOMS):
             pos = CONFSPEC.GetConformer().GetAtomPosition(atom)
-            #print pos.x, pos.y, pos.z
             CONFSPEC.CARTESIANS.append([pos.x, pos.y, pos.z])
 
         #Check whether the molecule has high energy
@@ -846,12 +798,12 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
             samecheck = 0
             torval1=getTorsion(CONFSPEC)
             # also check whether a duplicate conformation has been found
-            
+           
             for j in range(0, CSEARCH.NSAVED):
                 if CSEARCH.ENERGY[j] - CONFSPEC.ENERGY > 0.5: break
                 if abs(CONFSPEC.ENERGY - CSEARCH.ENERGY[j]) < 0.5:
                     if checkSame(torval1, CSEARCH, PARAMS, j) > 0:
-                        log.Write("   "+(CONFSPEC.NAME+" is a duplicate of conformer "+CSEARCH.NAME[j]+" ... ").ljust(50))
+                        log.Write("   "+( os.path.split(CONFSPEC.NAME)[1]+" is a duplicate of conformer "+ os.path.split(CSEARCH.NAME[j])[1]+" ... ").ljust(50))
                         CSEARCH.TIMESFOUND[j] = CSEARCH.TIMESFOUND[j] + 1
                         CSEARCH.NREJECT = CSEARCH.NREJECT + 1
                         samecheck = samecheck + 1
@@ -861,7 +813,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
             if samecheck == 0:
                 if CONFSPEC.ENERGY < CSEARCH.GLOBMIN:
                     CSEARCH.GLOBMIN = CONFSPEC.ENERGY
-                    log.Write("   "+(CONFSPEC.NAME+" is a new Global Minimum!").ljust(80)+("E = "+str(CSEARCH.GLOBMIN)).rjust(rightcol))
+                    log.Write("   "+( os.path.split(CONFSPEC.NAME)[1]+" is a new Global Minimum!").ljust(80)+("E = "+str(CSEARCH.GLOBMIN)).rjust(rightcol))
                 else : log.Write("   "+(CONFSPEC.NAME+" is saved").ljust(80)+("E = "+str(CONFSPEC.ENERGY)).rjust(rightcol))
                 AddConformer(CSEARCH, CONFSPEC)
                 if (CONFSPEC.ENERGY-CSEARCH.GLOBMIN) < PARAMS.EWIN: CSEARCH.LASTFOUND = CSEARCH.STEP
