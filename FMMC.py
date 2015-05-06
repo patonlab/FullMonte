@@ -790,7 +790,7 @@ def main(filein, filetype, maxstep = None, levl = None, progress_callback = None
 
         CONFSPEC.CARTESIANS = []
         for atom in range(0,MOLSPEC.NATOMS):
-            pos = CONFSPEC.GetConformer().GetAtomPosition(atom)
+            pos = CONFSPEC.GetConformer(cid).GetAtomPosition(atom)
             CONFSPEC.CARTESIANS.append([pos.x, pos.y, pos.z])
 
         #Check whether the molecule has high energy
