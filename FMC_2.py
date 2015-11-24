@@ -29,95 +29,120 @@ from FMTools import *
 
 if __name__ == "__main__":
 
-	# A FullMonte output file is required
-	if len(sys.argv)>=4: 
-		filein = sys.argv[1].split("_fm.")[0]
-		comfile = sys.argv[2].split(".")[0]
-		# Energy range for submitting QM jobs (kJ/mol)
-		CSEARCH.ENERGYRANGE = float(sys.argv[3])
+    # A FullMonte output file is required
+    if len(sys.argv)>=4:
+        filein = sys.argv[1].split("_fm.")[0]
+        comfile = sys.argv[2].split(".")[0]
+        # Energy range for submitting QM jobs (kJ/mol)
+        CSEARCH.ENERGYRANGE = float(sys.argv[3])
 	
-	else: print "\nWrong number of arguments used. Correct format: FullMonte struc_fm.out struc.com energyrange\n"; sys.exit()
-	if not os.path.exists(filein+"_fm.out"): print "\nFullMonte output not found! Exiting ...\n";  sys.exit(1)
+    else: print "\nWrong number of arguments used. Correct format: FullMonte struc_fm.out struc.com energyrange\n"; sys.exit()
+#    if not os.path.exists(filein+"_fm.out") or not os.path.exists(filein+"_fm.sdf"): print "\nFullMonte output not found! Exiting ...\n";  sys.exit(1)
 	
-	# Initialize the logfile for all text output
-	print "\no  Creating Full Monte QM log file for",filein+"_qm ..."
-	log = FMLog(filein, "dat", "qm")
-	qmtgz = filein+"_qm.tgz"
-	qmsuffix = "dft"	
-	if len(sys.argv)==5: qmsuffix = sys.argv[4]
+    # Initialize the logfile for all text output
+    print "\no  Creating Full Monte QM log file for",filein+"_qm ..."
+    log = FMLog(filein, "dat", "qm")
+    qmtgz = filein+"_qm.tgz"
+    qmsuffix = "dft"
+    if len(sys.argv)==5: qmsuffix = sys.argv[4]
 	
-	# Open the specified Gaussian structure file 
-	log.Write("\no  Extracting molecule data from "+comfile+".com ...")
-	MOLSPEC = getinData(comfile, log)
-	CONFSPEC = MOLSPEC
+    # Open the specified Gaussian structure file
+    log.Write("\no  Extracting molecule data from "+comfile+".com ...")
+    MOLSPEC = getinData(comfile, log)
+    CONFSPEC = MOLSPEC
 		
-	# Perform Gaussian TS optimizations - need to automate the job type here somehow!!!
-	JOB = JobSpec("Gaussian")	
-	JOB.JOBTYPE = MOLSPEC.JOBTYPE
-	if hasattr(MOLSPEC, "MEMREQ"): JOB.Mem = str(MOLSPEC.MEMREQ)
-	if hasattr(MOLSPEC, "NPROC"): 
-		JOB.NPROC = str(MOLSPEC.NPROC)		
+    # Perform Gaussian TS optimizations - need to automate the job type here somehow!!!
+    JOB = JobSpec("Gaussian")
+    JOB.JOBTYPE = MOLSPEC.JOBTYPE
+    if hasattr(MOLSPEC, "MEMREQ"): JOB.Mem = str(MOLSPEC.MEMREQ)
+    if hasattr(MOLSPEC, "NPROC"):
+        JOB.NPROC = str(MOLSPEC.NPROC)
 		
-	
+
 	# Read the Monte Carlo parameters (from the FullMonte outfile)
-	#log.Write("\no  Extracting conformational search parameters from "+filein+"_fm.out"+" ...")
-	SEARCHPARAMS = getParams(MOLSPEC, filein+"_fm.out",log)
+    #log.Write("\no  Extracting conformational search parameters from "+filein+"_fm.out"+" ...")
+	#SEARCHPARAMS = getParams(MOLSPEC, filein+"_fm.out",log)
 	
 	
-	# DEFINE NEW VARIABLES
-	OLDSEARCH= JobSpec("Gaussian")
-	OLDSEARCH.ENERGY = []
-	OLDSEARCH.CARTESIANS = []
-	OLDSEARCH.NAME = []
-	OLDSEARCH.TIMESFOUND = []
-	OLDSEARCH.GLOBMIN = 999.9
-	CSEARCH.GLOBMIN = 999.9
-	CSEARCH.CPU = []
-	CSEARCH.ALLCPU = []
-	CSEARCH.TORVAL = []
-	CSEARCH.NSAVED = 0
-	CSEARCH.ENERGY = []
-	
-
-	# Parse all saved constrained optimizations and create new input files for TS optimization
-	log.Write("\no  Extracting previously optimized structures from "+filein+"_fm.out ...")
-	conffile = open(filein+"_fm.out","r") 
-	conflines = conffile.readlines()
+    # DEFINE NEW VARIABLES
+    OLDSEARCH= JobSpec("Gaussian")
+    OLDSEARCH.ENERGY = []
+    OLDSEARCH.CARTESIANS = []
+    OLDSEARCH.NAME = []
+    OLDSEARCH.TIMESFOUND = []
+    OLDSEARCH.GLOBMIN = 999.9
+    CSEARCH.GLOBMIN = 999.9
+    CSEARCH.CPU = []
+    CSEARCH.ALLCPU = []
+    CSEARCH.TORVAL = []
+    CSEARCH.NSAVED = 0
+    CSEARCH.ENERGY = []
 	
 
-	for line in conflines:
-		if line.find("CONFORMER") > -1: 
-			if float(line.split()[3]) < OLDSEARCH.GLOBMIN: OLDSEARCH.GLOBMIN = float(line.split()[3])
-								
-	for line in conflines:
-		if line.find("CONFORMER") > -1:
-			if (float(line.split()[3])-OLDSEARCH.GLOBMIN)*2625.5 < CSEARCH.ENERGYRANGE:
-				OLDSEARCH.NAME.append(line.split()[2])
-				OLDSEARCH.ENERGY.append(float(line.split()[3]))
-				OLDSEARCH.TIMESFOUND.append(int(line.split()[4]))
-				if float(line.split()[3]) < OLDSEARCH.GLOBMIN: OLDSEARCH.GLOBMIN = float(line.split()[3])
-			
-			
-	for i in range(0,len(conflines)):
-		if conflines[i].find("CONFORMER")> -1:
-			if (float(conflines[i].split()[3])-OLDSEARCH.GLOBMIN)*2625.5 < CSEARCH.ENERGYRANGE:
-				if conflines[i+1].find("Standard orientation:")> -1: skip = 6
-				else: skip = 10
-				j = 0
-				
-				MOLSPEC.CARTESIANS = []
-				while conflines[i+skip+j].find("----------------") == -1:
-					if len(conflines[i+skip+j].split()) == 6:
-						MOLSPEC.CARTESIANS.append([float(conflines[i+skip+j].split()[3]), float(conflines[i+skip+j].split()[4]), float(conflines[i+skip+j].split()[5])])
-						j = j +1
-				OLDSEARCH.CARTESIANS.append(MOLSPEC.CARTESIANS)
+    if os.path.isfile(filein+"_fm.out"):
+        # Parse all saved constrained optimizations and create new input files for TS optimization
+        log.Write("\no  Extracting previously optimized structures from "+filein+"_fm.out ...")
+        conffile = open(filein+"_fm.out","r") 
+        conflines = conffile.readlines()
+        
+
+        for line in conflines:
+            if line.find("CONFORMER") > -1: 
+                if float(line.split()[3]) < OLDSEARCH.GLOBMIN: OLDSEARCH.GLOBMIN = float(line.split()[3])
+                                    
+        for line in conflines:
+            if line.find("CONFORMER") > -1:
+                if (float(line.split()[3])-OLDSEARCH.GLOBMIN)*2625.5 < CSEARCH.ENERGYRANGE:
+                    OLDSEARCH.NAME.append(line.split()[2])
+                    OLDSEARCH.ENERGY.append(float(line.split()[3]))
+                    OLDSEARCH.TIMESFOUND.append(int(line.split()[4]))
+                    if float(line.split()[3]) < OLDSEARCH.GLOBMIN: OLDSEARCH.GLOBMIN = float(line.split()[3])
+                
+                
+        for i in range(0,len(conflines)):
+            if conflines[i].find("CONFORMER")> -1:
+                if (float(conflines[i].split()[3])-OLDSEARCH.GLOBMIN)*2625.5 < CSEARCH.ENERGYRANGE:
+                    if conflines[i+1].find("Standard orientation:")> -1: skip = 6
+                    else: skip = 10
+                    j = 0
+                    
+                    MOLSPEC.CARTESIANS = []
+                    while conflines[i+skip+j].find("----------------") == -1:
+                        if len(conflines[i+skip+j].split()) == 6:
+                            MOLSPEC.CARTESIANS.append([float(conflines[i+skip+j].split()[3]), float(conflines[i+skip+j].split()[4]), float(conflines[i+skip+j].split()[5])])
+                            j = j +1
+                    OLDSEARCH.CARTESIANS.append(MOLSPEC.CARTESIANS)
+
+
+    if os.path.isfile(filein+"_fm.sdf"):
+        # Parse all saved constrained optimizations and create new input files for TS optimization
+        log.Write("\no  Extracting previously optimized structures from "+filein+"_fm.sdf ...")
+        conffile = open(filein+"_fm.sdf","r")
+        conflines = conffile.readlines()
+            
+        for line in conflines:
+            if line.find("E=") > -1:
+                if float(line.split(("="))[1]) < OLDSEARCH.GLOBMIN: OLDSEARCH.GLOBMIN = float(line.split(("="))[1])
+        
+        for i in range(0,len(conflines)):
+            if conflines[i].find("E=") > -1:
+                if (float(conflines[i].split(("="))[1])-OLDSEARCH.GLOBMIN)*4.184 < CSEARCH.ENERGYRANGE:
+                    OLDSEARCH.NAME.append(conflines[i-1].rstrip().lstrip().split()[0])
+                    OLDSEARCH.ENERGY.append(float(conflines[i].split(("="))[1]))
+                    OLDSEARCH.TIMESFOUND.append(1)
+                    MOLSPEC.CARTESIANS = []
+                    j = 0
+                    while conflines[i+3+j].find("0  0  0  0") > -1:
+                        MOLSPEC.CARTESIANS.append([float(conflines[i+3+j].split()[0]), float(conflines[i+3+j].split()[1]), float(conflines[i+3+j].split()[2])])
+                        j = j +1
+                    OLDSEARCH.CARTESIANS.append(MOLSPEC.CARTESIANS)
 				
 				
 	if not os.path.isfile(qmtgz):
 		log.Write("\no  Creating QM optimization for structures within "+str(CSEARCH.ENERGYRANGE)+" kJ/mol of global minimum ...")
 		comtar = tarfile.open(qmtgz, "w|gz")
 		
-	
+		print OLDSEARCH.NAME
 		for i in range(0, len(OLDSEARCH.NAME)):
 			# Read coordinates from constained optimization
 			MOLSPEC.NAME = OLDSEARCH.NAME[i]+"_"+qmsuffix
