@@ -3,13 +3,13 @@ import unittest
 import tempfile
 import os
 import shutil
-import FMMC
+import FullMonte
 import logging
 
-fmmc_logger = logging.getLogger('FMMC')
+fmmc_logger = logging.getLogger('FullMonte')
 fmmc_logger.addHandler(logging.NullHandler())
 
-class TestFMMCMain(unittest.TestCase):
+class TestFullMonteMain(unittest.TestCase):
     def setUp(self):
         self.hexane_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'hexane.mol')
         self.tempdir = tempfile.mkdtemp()
@@ -24,10 +24,10 @@ class TestFMMCMain(unittest.TestCase):
         self.assertEqual(['hexane.mol'], os.listdir(self.tempdir))
 
         # Run fmmc(). It should save results locally, into same directory as input file.
-        # reproduce params as calculated in FMMC.py. NB imperfect. What if file contains >1 dot?
+        # reproduce params as calculated in FullMonte.py. NB imperfect. What if file contains >1 dot?
         filein   = self.inputfile_path.split(".")[0]
         filetype = self.inputfile_path.split(".")[1]
-        FMMC.main(filein, filetype, maxstep=1)
+        FullMonte.main(filein, filetype, maxstep=1)
 
         # hexane.dat, hexane.mol, hexane_fm.sdf
         self.assertEqual(3, len(os.listdir(self.tempdir)))

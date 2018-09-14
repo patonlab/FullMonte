@@ -6,13 +6,13 @@ import sys
 import unittest
 
 try:
-    import FMMC
+    import FullMonte
 except ImportError, e:
-    sys.stdout.write("Failed importing FMMC.\nAre libraries installed?\n'%s'\n" % e)
+    sys.stdout.write("Failed importing FullMonte.\nAre libraries installed?\n'%s'\n" % e)
     sys.exit(1)
 
 from tests.test_sdfwriter import TestSDFWriter
-from tests.test_main      import TestFMMCMain
+from tests.test_main      import TestFullMonteMain
 
 if __name__ == '__main__':
     unittest.main()

@@ -11,7 +11,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import ForceField
 
-logger = logging.getLogger('FMMC')
+logger = logging.getLogger('FullMonte')
 #logging.basicConfig(level=logging.DEBUG)
 
 # The time elapsed between two specified Y/M/D 24H/M/S format #
