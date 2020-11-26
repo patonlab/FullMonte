@@ -124,9 +124,6 @@ Searches terminate when all the steps have finished, or when the search stops fi
 - DMIN: The number of times that the least-found conformer has been located. 
 - MCNV: The number of 	rotatable torsions which will be altered during the conformational search. Each time a new guess geometry is generated, a random number between 2 and MCNV-1 of torsion angles are varied by random amounts.
 
-## CITING FULL MONTE
-If you use Full Monte in your work please include the following citation:
-
 ## REFERENCES
 Monte Carlo Multiple Minimum: Chang, G.; Guida, W. C.; Still, W. C. ÒAn Internal Coordinate Monte Carlo Method for Searching Conformational SpaceÓ J. Am. Chem. Soc. 1989, 111, 4379-4386.
 
