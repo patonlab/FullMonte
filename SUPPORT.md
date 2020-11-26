@@ -2,7 +2,7 @@
 
 FullMonte offers the following support channels:
 
-- For detailed questions (e.g., those requiring examples) send us an email
+- For detailed questions (e.g., those requiring examples) send us an
   [email](mailto:patonlab@colostate.edu?subject=[FullMonte])
 - To report issues, use this repository's
   [issue tracker](https://github.com/bobbypaton/FullMonte/issues/new)
