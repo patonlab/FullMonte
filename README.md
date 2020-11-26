@@ -42,7 +42,7 @@ FullMonte testfm.com testparamfile
 
 (If this is the first time Full Monte has been used, the program may need to be told where to find the MOPAC executable. Run the following FullMonte with one of the arguments as Ðsetup and respond to the two questions, so that the location can be updated)
 
-Respond to any prompts or just press return and you should see the search begin. The search parameters are output at the beginning, followed by real time updates of new conformers found. When the search is complete, the program should exit and you can view the logfile, and visualize the conformers found in the *_fm.out and *_fm.pdb files.
+Respond to any prompts or just press return and you should see the search begin. The search parameters are output at the beginning, followed by real time updates of new conformers found. When the search is complete, the program should exit and you can view the logfile, and visualize the conformers found in the _fm.out and _fm.pdb files.
 
 
 ## Adjustable Parameters
@@ -63,7 +63,7 @@ The adjustable parameters are described below. Some of the keywords are inherite
 ### COMP (new)
 Conformers are deemed to be identical if they have very similar energies and geometries. For each optimization performed, the root mean squared difference in heavy atom torsion angles is compared with previously saved conformers. If this value falls below COMP (degrees) and the difference in energy is smaller than 0.5 kJ/mol the two structures are deemed identical. 
 
-The default value for COMP is 10¡
+The default value for COMP is 10
 
 ### DEMX
 Conformers are saved if they lie within DEMX kJ/mol of the global energy minimum conformation. Those above this energy are discarded.
