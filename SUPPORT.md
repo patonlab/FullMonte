@@ -6,6 +6,7 @@ FullMonte offers the following support channels:
   [email](mailto:patonlab@colostate.edu?subject=[FullMonte])
 - To report issues, use this repository's
   [issue tracker](https://github.com/bobbypaton/FullMonte/issues/new)
+- You can also find us on [![Twitter][1.2]][1]
 
 When reporting an issue, please include the following details:
 
@@ -15,3 +16,6 @@ When reporting an issue, please include the following details:
 - The actual results received.
 
 You may also submit a failing test case as a pull request.
+
+[1.2]: http://i.imgur.com/wWzX9uB.png (twitter icon without padding)
+[1]: https://twitter.com/bobbyoaton
