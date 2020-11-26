@@ -1,5 +1,4 @@
 ![FullMonte](fullmonte_header.png)
-===
 
 ## What is it?
 Full Monte is a python program that finds the low-energy conformations of flexible molecular systems. 
